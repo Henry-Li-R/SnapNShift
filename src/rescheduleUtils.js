@@ -14,9 +14,8 @@ function findNextAvailableSlot(task, pointer, fixedTasks, scheduledTasks) {
   let candidateStart = Math.max(pointer, 0);
 
   while (candidateStart + task.duration <= DAY_END) {
-    // Explain code below  
+     
     const conflict = fixedTasks.concat(scheduledTasks).some(otherTask => {
-      if (otherTask.startTime === null) return false;
       const otherStart = timeStrToMinutes(otherTask.startTime);
       const otherEnd = otherStart + otherTask.duration;
       const candidateEnd = candidateStart + task.duration;
@@ -45,13 +44,10 @@ function applyPushMode(tasks, currentTimeStr) {
   // Separate fixed and non-fixed tasks
   const fixedTasks = tasks
     .filter(task => task.fixed)
-    .filter(task => task.startTime !== null)
     .sort((a, b) => timeStrToMinutes(a.startTime) - timeStrToMinutes(b.startTime));
 
   const nonFixedTasks = tasks
-    .filter(task => !task.fixed && !task.completed)
-    .filter(task => task.startTime !== null)
-    .sort((a, b) => timeStrToMinutes(a.startTime) - timeStrToMinutes(b.startTime));
+    .filter(task => !task.fixed && !task.completed && !task.skipped);
 
   let pointer = timeStrToMinutes(currentTimeStr);
   const scheduledTasks = [];
@@ -59,7 +55,6 @@ function applyPushMode(tasks, currentTimeStr) {
   for (const task of nonFixedTasks) {
     const newStart = findNextAvailableSlot(task, pointer, fixedTasks, scheduledTasks);
     if (newStart === null) {
-      task.startTime = null;
       task.skipped = true;
       continue;
     }
@@ -68,8 +63,15 @@ function applyPushMode(tasks, currentTimeStr) {
     pointer = newStart + task.duration;
     scheduledTasks.push({ ...task });
   }
-  
-  return scheduledTasks;
+
+  const completedTasks = tasks.filter(task => task.completed);
+  const skippedTasks = tasks.filter(task => task.skipped);
+  return [[...fixedTasks, ...completedTasks, ...scheduledTasks]
+    .sort((a, b) => {
+      const aTime = a.startTime ? timeStrToMinutes(a.startTime) : Infinity;
+      const bTime = b.startTime ? timeStrToMinutes(b.startTime) : Infinity;
+      return aTime - bTime;
+    }), skippedTasks];
 }
 
 export { applyPushMode };

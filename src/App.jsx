@@ -6,12 +6,19 @@ export default function App() {
   const [tasks, setTasks] = useState([]);
   const [initialized, setInitialized] = useState(false);
 
-  const handleAdd = ({ text, duration, startTime, fixed, skippable }) => {
+  const handleAdd = ({ text, duration, startTime, fixed, skippable, completed}) => {
     setTasks((prev) => [
       ...prev,
-      { id: Date.now(), text, duration, startTime, fixed, skippable },
+      { id: Date.now(), text, duration, startTime, fixed, skippable, completed },
     ]);
   };
+
+  const taskToString = task => (
+   `[${task.startTime || '--:--'}] ${task.text} (${task.duration}m)` +
+    (task.fixed ? ' [Fixed]' : '') +
+    (task.completed ? ' [Done]' : '') +
+    (task.skipped ? ' [Skipped]' : '')
+  );
 
   const handleDelete = (id) => {
     setTasks((prev) => prev.filter((task) => task.id !== id));
@@ -37,7 +44,7 @@ export default function App() {
       <h1 className="text-2xl font-bold mb-4">SnapShift</h1>
       <TaskInput onAdd={handleAdd} />
       {/* List of tasks (with description and button to delete task) */}
-      
+      {/*
       <ul className="space-y-2">
         {tasks.map((task) => (
           <li
@@ -57,6 +64,7 @@ export default function App() {
           </li>
         ))}
       </ul>
+      */}
       {/* Button to delete all tasks */}
       {tasks.length > 0 && (
         <button
@@ -113,13 +121,11 @@ export default function App() {
       <button
         onClick={() => {
           const now = new Date();
-          const currentMinutes = now.getHours() * 60 + now.getMinutes();
-          const updated = applyPushMode(tasks, currentMinutes);
+          const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+          const [updated, skippedTasks] = applyPushMode(tasks, currentTimeStr);
           setTasks(updated);
-          const skippedCount = updated.filter(t => t.skipped).length;
-          if (skippedCount > 0) {
-            alert(`${skippedCount} task(s) could not be rescheduled and were skipped.`);
-          }
+          alert(`${skippedTasks.length} task(s) could not be scheduled and were skipped.`);
+          console.log("Skipped tasks:\n" + skippedTasks.map(taskToString).join('\n'));
         }}
         className="mt-4 mb-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
       >
