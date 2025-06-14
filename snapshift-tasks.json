@@ -1,10 +1,26 @@
 [
   {
-    "id": 1749731598946,
-    "text": "jkjk",
-    "duration": 33,
-    "startTime": "09:00",
+    "id": 1,
+    "text": "Fixed Task",
+    "duration": 60,
+    "startTime": "14:00",
+    "fixed": true,
+    "completed": false
+  },
+  {
+    "id": 2,
+    "text": "Pushable Task A",
+    "duration": 30,
+    "startTime": "13:00",
     "fixed": false,
-    "skippable": true
+    "completed": false
+  },
+  {
+    "id": 3,
+    "text": "Pushable Task B",
+    "duration": 45,
+    "startTime": "13:45",
+    "fixed": false,
+    "completed": false
   }
 ]

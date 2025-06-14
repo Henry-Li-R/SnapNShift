@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import TaskInput from "./components/TaskInput";
+import { applyPushMode } from './rescheduleUtils';
 
 export default function App() {
   const [tasks, setTasks] = useState([]);
@@ -36,6 +37,7 @@ export default function App() {
       <h1 className="text-2xl font-bold mb-4">SnapShift</h1>
       <TaskInput onAdd={handleAdd} />
       {/* List of tasks (with description and button to delete task) */}
+      
       <ul className="space-y-2">
         {tasks.map((task) => (
           <li
@@ -107,6 +109,22 @@ export default function App() {
           reader.readAsText(file);
         }}
       />
+      {/* Push Now Button */}
+      <button
+        onClick={() => {
+          const now = new Date();
+          const currentMinutes = now.getHours() * 60 + now.getMinutes();
+          const updated = applyPushMode(tasks, currentMinutes);
+          setTasks(updated);
+          const skippedCount = updated.filter(t => t.skipped).length;
+          if (skippedCount > 0) {
+            alert(`${skippedCount} task(s) could not be rescheduled and were skipped.`);
+          }
+        }}
+        className="mt-4 mb-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+      >
+        Push Now
+      </button>
       {/* Timeline */}
       <h2 className="text-lg font-semibold mt-8 mb-2">Timeline</h2>
       <div className="space-y-1 border-l-2 border-gray-400 pl-4">
@@ -123,6 +141,9 @@ export default function App() {
               </div>
               <div className="bg-blue-100 p-2 rounded-md shadow-sm">
                 {task.text} ({task.duration} min)
+                {task.fixed && " [Fixed]"}
+                {task.completed && " [Done]"}
+                {task.skipped && " [Skipped]"}
               </div>
             </div>
           ))}
