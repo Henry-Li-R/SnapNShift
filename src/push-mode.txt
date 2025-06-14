@@ -1,0 +1,27 @@
+tasksToPush = non-fixed, incomplete tasks sorted by current startTime (ascending)
+fixedTasks = fixed tasks, sorted by startTime
+
+pointer = current time in minutes
+DAY_END = 21 * 60 // e.g., 9:00 PM
+
+// Auxiliary functions
+- Convert all task times to minutes since midnight for processing
+
+- Define function: isConflict(taskA, taskB)
+    → returns true if taskA and taskB time ranges overlap
+
+- Define function: findNextAvailableSlot(task, pointer, fixedTasks)
+    → returns earliest non-conflicting startTime >= pointer
+
+// Main logic
+FOR each task in tasksToPush:
+    newStart = findNextAvailableSlot(task, pointer, fixedTasks)
+    
+    IF newStart === null:
+        task.startTime = null
+        task.skipped = true
+        CONTINUE
+
+    task.startTime = newStart
+    task.skipped = false
+    pointer = newStart + task.duration

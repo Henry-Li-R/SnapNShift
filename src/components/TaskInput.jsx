@@ -11,6 +11,8 @@ export default function TaskInput({ onAdd }) {
   const [startTime, setStartTime] = useState(DEFAULT_START_TIME);
   const [fixed, setFixed] = useState(DEFAULT_FIXED);
   const [skippable, setSkippable] = useState(DEFAULT_SKIPPABLE);
+  const [completed, setCompleted] = useState(false);
+  
 
   const setDefault = () => {
     setText("");
@@ -18,6 +20,7 @@ export default function TaskInput({ onAdd }) {
     setStartTime(DEFAULT_START_TIME);
     setFixed(DEFAULT_FIXED);
     setSkippable(DEFAULT_SKIPPABLE);
+    setCompleted(false);
   };
 
   const handleSubmit = (e) => {
@@ -29,6 +32,7 @@ export default function TaskInput({ onAdd }) {
       startTime, // type: string or time??
       fixed,
       skippable,
+      completed,
     });
     setDefault();
   };
@@ -74,6 +78,14 @@ export default function TaskInput({ onAdd }) {
           onChange={(e) => setSkippable(e.target.checked)}
         />
         Skippable
+      </label>
+      <label className="flex items-center gap-1 text-sm">
+        <input
+          type="checkbox"
+          checked={completed}
+          onChange={(e) => setCompleted(e.target.checked)}
+        />
+        Completed
       </label>
       <button
         type="submit"
