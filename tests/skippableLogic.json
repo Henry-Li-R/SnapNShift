@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "text": "Fixed Task A",
+    "duration": 60,
+    "startTime": "13:00",
+    "fixed": true,
+    "completed": false,
+    "skippable": false,
+    "skipped": false
+  },
+  {
+    "id": 2,
+    "text": "Fixed Task B",
+    "duration": 60,
+    "startTime": "15:00",
+    "fixed": true,
+    "completed": false,
+    "skippable": false,
+    "skipped": false
+  },
+  {
+    "id": 3,
+    "text": "Non-Skippable Small A",
+    "duration": 30,
+    "startTime": "12:00",
+    "fixed": false,
+    "completed": false,
+    "skippable": false,
+    "skipped": false
+  },
+  {
+    "id": 4,
+    "text": "Non-Skippable Small B",
+    "duration": 30,
+    "startTime": "14:00",
+    "fixed": false,
+    "completed": false,
+    "skippable": false,
+    "skipped": false
+  },
+  {
+    "id": 5,
+    "text": "Skippable Small A",
+    "duration": 30,
+    "startTime": "16:00",
+    "fixed": false,
+    "completed": false,
+    "skippable": true,
+    "skipped": false
+  },
+  {
+    "id": 6,
+    "text": "Skippable Long",
+    "duration": 120,
+    "startTime": "17:00",
+    "fixed": false,
+    "completed": false,
+    "skippable": true,
+    "skipped": false
+  }
+]
