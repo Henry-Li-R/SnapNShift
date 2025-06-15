@@ -1,4 +1,4 @@
-tasksToPush = non-fixed, incomplete tasks sorted by current startTime (ascending)
+tasksToPush = non-fixed, incomplete tasks sorted by current startTime (ascending), with skippable tasks moved to the end
 fixedTasks = fixed tasks, sorted by startTime
 
 pointer = current time in minutes
@@ -25,3 +25,11 @@ FOR each task in tasksToPush:
     task.startTime = newStart
     task.skipped = false
     pointer = newStart + task.duration
+
+// Fallback sweep for skipped tasks
+FOR time = current time to DAY_END:
+    FOR each task in tasksToPush WHERE task.skipped == true:
+        IF task can fit at 'time' without conflicting with fixedTasks or already scheduled tasks:
+            task.startTime = time
+            task.skipped = false
+            BREAK

@@ -1,3 +1,24 @@
+function fallbackReschedule(tasks, pointer, fixedTasks, scheduledTasks) {
+  const DAY_END = 21 * 60; // make global variable
+  const unscheduled = tasks.filter(task => task.skipped && !task.completed);
+
+  for (let time = pointer; time < DAY_END; time++) {
+    for (const task of unscheduled) {
+      const conflict = fixedTasks.concat(scheduledTasks).some(otherTask => {
+        const otherStart = timeStrToMinutes(otherTask.startTime);
+        const otherEnd = otherStart + otherTask.duration;
+        const taskEnd = time + task.duration;
+        return time < otherEnd && otherStart < taskEnd;
+      });
+      if (!conflict && time + task.duration <= DAY_END) {
+        task.startTime = minutesToTimeStr(time);
+        task.skipped = false;
+        scheduledTasks.push({ ...task });
+        break;
+      }
+    }
+  }
+}
 function timeStrToMinutes(timeStr) {
   const [hours, minutes] = timeStr.split(':').map(Number);
   return hours * 60 + minutes;
@@ -47,7 +68,11 @@ function applyPushMode(tasks, currentTimeStr) {
     .sort((a, b) => timeStrToMinutes(a.startTime) - timeStrToMinutes(b.startTime));
 
   const nonFixedTasks = tasks
-    .filter(task => !task.fixed && !task.completed && !task.skipped);
+    .filter(task => !task.fixed && !task.completed && !task.skipped)
+    .sort((a, b) => {
+      if (a.skippable === b.skippable) return 0;
+      return a.skippable ? 1 : -1; // non-skippable first
+    });
 
   let pointer = timeStrToMinutes(currentTimeStr);
   const scheduledTasks = [];
@@ -63,6 +88,7 @@ function applyPushMode(tasks, currentTimeStr) {
     pointer = newStart + task.duration;
     scheduledTasks.push({ ...task });
   }
+  fallbackReschedule(nonFixedTasks, pointer, fixedTasks, scheduledTasks);
 
   const completedTasks = tasks.filter(task => task.completed);
   const skippedTasks = tasks.filter(task => task.skipped);

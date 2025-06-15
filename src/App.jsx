@@ -19,11 +19,11 @@ export default function App() {
     (task.completed ? ' [Done]' : '') +
     (task.skipped ? ' [Skipped]' : '')
   );
-
+  /*
   const handleDelete = (id) => {
     setTasks((prev) => prev.filter((task) => task.id !== id));
   };
-
+  */
   useEffect(() => {
     const saved = localStorage.getItem("snapshift-tasks");
     if (saved) {

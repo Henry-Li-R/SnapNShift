@@ -95,4 +95,9 @@ Already structured to support:
 
 ---
 
+## Known Limitations
+- Push mode uses greedy scheduling: shorter tasks may be skipped if preceded by a long task that can’t fit.
+
+---
+
 Let’s build something that makes imperfect days feel productive again.

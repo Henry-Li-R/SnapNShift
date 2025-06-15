@@ -6,13 +6,16 @@ export default function TaskInput({ onAdd }) {
   const DEFAULT_FIXED = false;
   const DEFAULT_SKIPPABLE = true;
 
+  /*
+  the task attributes below exhibit some dependencies
+  between each other
+  */
   const [text, setText] = useState("");
   const [duration, setDuration] = useState(DEFAULT_DURATION);
   const [startTime, setStartTime] = useState(DEFAULT_START_TIME);
   const [fixed, setFixed] = useState(DEFAULT_FIXED);
   const [skippable, setSkippable] = useState(DEFAULT_SKIPPABLE);
   const [completed, setCompleted] = useState(false);
-  
 
   const setDefault = () => {
     setText("");
@@ -29,10 +32,11 @@ export default function TaskInput({ onAdd }) {
     onAdd({
       text: text.trim(),
       duration: parseInt(duration, 10),
-      startTime, // type: string or time??
+      startTime,
       fixed,
       skippable,
       completed,
+      skipped: false
     });
     setDefault();
   };
