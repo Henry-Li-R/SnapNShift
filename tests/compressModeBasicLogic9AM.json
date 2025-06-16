@@ -1,0 +1,36 @@
+[
+  {
+    "id": 1,
+    "text": "Fixed Task",
+    "duration": 60,
+    "startTime": "11:00",
+    "fixed": true,
+    "completed": false
+  },
+  {
+    "id": 2,
+    "text": "Non-Fixed A",
+    "duration": 30,
+    "startTime": "11:30",
+    "fixed": false,
+    "completed": false,
+    "skippable": false
+  },
+  {
+    "id": 3,
+    "text": "Non-Fixed B",
+    "duration": 45,
+    "startTime": "12:30",
+    "fixed": false,
+    "completed": false,
+    "skippable": false
+  },
+  {
+    "id": 4,
+    "text": "Completed Task",
+    "duration": 30,
+    "startTime": "09:00",
+    "fixed": false,
+    "completed": true
+  }
+]

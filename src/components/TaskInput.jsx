@@ -15,6 +15,8 @@ export default function TaskInput({ onAdd }) {
   const [startTime, setStartTime] = useState(DEFAULT_START_TIME);
   const [fixed, setFixed] = useState(DEFAULT_FIXED);
   const [skippable, setSkippable] = useState(DEFAULT_SKIPPABLE);
+  // skippable may be replaced with priority,
+  // taking values high, med, low
   const [completed, setCompleted] = useState(false);
 
   const setDefault = () => {

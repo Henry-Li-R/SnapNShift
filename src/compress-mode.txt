@@ -1,0 +1,24 @@
+nonFixedTasks = tasks where task.fixed == false AND task.completed == false
+    → sort by non-skippable tasks first
+    → sort by startTime ascending
+
+
+fixedTasks = tasks where task.fixed == true
+    → sort by startTime ascending
+
+scheduledTasks = []
+pointer = CURRENT_TIME (in minutes)
+
+// Main compressing logic
+FOR EACH task IN nonFixedTasks:
+    newStart = findEarliestAvailableSlot(task, pointer, fixedTasks, scheduledTasks)
+
+    IF newStart < task.originalStartTime:
+        task.startTime = newStart
+    scheduledTasks.push(task)
+    
+    pointer = max(pointer, task.startTime + task.duration)
+
+// Final step: combine and sort
+finalTasks = fixedTasks + scheduledTasks + completedTasks
+    → sort by startTime

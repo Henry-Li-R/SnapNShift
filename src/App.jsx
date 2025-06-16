@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import TaskInput from "./components/TaskInput";
-import { applyPushMode } from './rescheduleUtils';
+import { applyPushMode, applyCompressMode } from './rescheduleUtils';
 
 export default function App() {
   const [tasks, setTasks] = useState([]);
@@ -131,6 +131,18 @@ export default function App() {
       >
         Push Now
       </button>
+      <button
+        onClick={() => {
+          const now = new Date();
+          const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+          const updated = applyCompressMode(tasks, currentTimeStr);
+          setTasks(updated);
+        }}
+        className="mt-2 mb-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+      >
+        Compress Now
+      </button>
+      
       {/* Timeline */}
       <h2 className="text-lg font-semibold mt-8 mb-2">Timeline</h2>
       <div className="space-y-1 border-l-2 border-gray-400 pl-4">
