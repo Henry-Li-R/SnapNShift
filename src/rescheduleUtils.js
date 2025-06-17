@@ -114,23 +114,31 @@ function fallbackReschedule(tasks, pointer, fixedTasks, scheduledTasks) {
 /* Compress code */
 /**
  * Applies compress mode to optimize task layout.
- * Compress mode moves non-fixed tasks earlier in the day if possible,
- * without violating task constraints or overlapping fixed tasks.
- * 
- * Tasks are prioritized:
- *   1. Non-skippable tasks
- *   2. Earlier originally scheduled tasks
  *
- * Fixed and completed tasks are preserved.
- * Skipped tasks are not affected.
+ * Compress mode attempts to move non-fixed, incomplete tasks earlier in the day
+ * (starting from the current time), as long as doing so does not create overlap
+ * with already scheduled tasks (fixed or previously compressed).
  *
- * @param {Array} tasks - Array of task objects. Each task may include:
+ * Behavior:
+ * - Only non-fixed, incomplete, non-skipped tasks are considered for compression.
+ * - Tasks are compressed in the order of their original start times.
+ * - Tasks are not reordered by skippable status or priority.
+ * - A task is compressed only if an earlier available time slot is found.
+ * - Fixed, completed, and skipped tasks remain unchanged.
+ *
+ * Assumptions:
+ * - Input task array includes valid `startTime` strings (e.g., "14:30").
+ * - Compress mode does not guarantee minimal gaps, only left-shifting when possible.
+ * - The relative order of non-fixed tasks is preserved after compression.
+ *
+ * @param {Array} tasks - Array of task objects. Each task includes:
  *   - startTime: string (e.g., "14:30")
  *   - duration: number (minutes)
  *   - fixed: boolean
  *   - completed: boolean
+ *   - skipped: boolean
  *   - skippable: boolean
- * @param {string} currentTimeStr - Current time as a string (e.g., "12:00")
+ * @param {string} currentTimeStr - Current time as a string (e.g., "12:00").
  * @returns {Array} New array of rescheduled tasks, sorted by startTime.
  */
 function applyCompressMode(tasks, currentTimeStr) {
@@ -143,10 +151,11 @@ function applyCompressMode(tasks, currentTimeStr) {
   const nonFixedTasks = tasks
     .filter((task) => !task.fixed && !task.completed)
     .sort((a, b) => {
-      if (a.skippable === b.skippable) {
+      // tasks are not ordered by skippable priority
+      //f (a.skippable === b.skippable) {
         return timeStrToMinutes(a.startTime) - timeStrToMinutes(b.startTime);
-      }
-      return a.skippable ? 1 : -1;
+      //}
+      //return a.skippable ? 1 : -1;
     });
 
   const scheduledTasks = [];
@@ -163,10 +172,13 @@ function applyCompressMode(tasks, currentTimeStr) {
 
     if (newStart < originalStart) {
       task.startTime = minutesToTimeStr(newStart);
+      pointer = newStart + task.duration;
+    } else {
+      pointer = originalStart + task.duration;
     }
 
     scheduledTasks.push({ ...task });
-    pointer = Math.max(pointer, newStart + task.duration);
+    
   }
 
   const completedTasks = tasks.filter((task) => task.completed);

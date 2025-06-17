@@ -1,0 +1,5 @@
+[
+  { "id": 1, "text": "Fixed", "duration": 60, "startTime": "10:00", "fixed": true, "completed": false },
+  { "id": 2, "text": "Task A", "duration": 30, "startTime": "09:00", "fixed": false, "completed": false, "skippable": false },
+  { "id": 3, "text": "Task B", "duration": 30, "startTime": "11:00", "fixed": false, "completed": false, "skippable": false }
+]
