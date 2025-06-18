@@ -18,9 +18,10 @@ FOR each task in tasksToPush:
     newStart = findNextAvailableSlot(task, pointer, fixedTasks)
     
     IF newStart === null:
-        task.startTime = null
         task.skipped = true
         CONTINUE
+    ELSE IF newStart < originalStart:
+        KEEP task as is
 
     task.startTime = newStart
     task.skipped = false

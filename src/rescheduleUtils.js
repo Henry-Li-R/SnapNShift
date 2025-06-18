@@ -57,7 +57,15 @@ function applyPushMode(tasks, currentTimeStr) {
     pointer = newStart + task.duration;
     scheduledTasks.push({ ...task });
   }
-  fallbackReschedule(nonFixedTasks, pointer, fixedTasks, scheduledTasks);
+  // fallbackReschedule() will be used if current
+  // applyPushMode() method is ineffective in fitting
+  // as many tasks as possible
+
+  // fallbackReschedule() logic is not tested yet
+  // since unable to devise test case
+
+
+  // fallbackReschedule(nonFixedTasks, timeStrToMinutes(currentTimeStr), fixedTasks, scheduledTasks);
 
   const completedTasks = tasks.filter((task) => task.completed);
   const skippedTasks = tasks.filter((task) => task.skipped);
@@ -71,6 +79,14 @@ function applyPushMode(tasks, currentTimeStr) {
   ];
 }
 
+/**
+ * ensures task only gets rescheduled to start later
+ * @param {*} task 
+ * @param {*} pointer 
+ * @param {*} fixedTasks 
+ * @param {*} scheduledTasks 
+ * @returns 
+ */
 function findNextAvailableSlot(task, pointer, fixedTasks, scheduledTasks) {
   let candidateStart = Math.max(pointer, 0);
 
@@ -82,7 +98,8 @@ function findNextAvailableSlot(task, pointer, fixedTasks, scheduledTasks) {
       return candidateStart < otherEnd && otherStart < candidateEnd;
     });
     if (!conflict) {
-      return candidateStart;
+      // ensures task only gets rescheduled to start later
+      return Math.max(timeStrToMinutes(task.startTime), candidateStart);
     }
     candidateStart++;
   }
@@ -90,8 +107,24 @@ function findNextAvailableSlot(task, pointer, fixedTasks, scheduledTasks) {
   return null;
 }
 
+/**
+ * Schedule skipped task in any slots that have been missed
+ * May mutate scheduleTasks array by adding tasks
+ * @param {*} tasks 
+ * @param {*} pointer 
+ * @param {*} fixedTasks 
+ * @param {*} scheduledTasks 
+ */
+/*
 function fallbackReschedule(tasks, pointer, fixedTasks, scheduledTasks) {
-  const unscheduled = tasks.filter((task) => task.skipped && !task.completed);
+  const unscheduled = tasks
+    .filter((task) => task.skipped && !task.completed)
+    .sort((a,b) => {
+      if (a.skippable === b.skippable) {
+        return timeStrToMinutes(a.startTime) - timeStrToMinutes(b.startTime);
+      }
+      return a.skippable ? 1 : -1;
+    });
 
   for (let time = pointer; time < DAY_END; time++) {
     for (const task of unscheduled) {
@@ -110,6 +143,7 @@ function fallbackReschedule(tasks, pointer, fixedTasks, scheduledTasks) {
     }
   }
 }
+*/
 
 /* Compress code */
 /**
@@ -152,7 +186,7 @@ function applyCompressMode(tasks, currentTimeStr) {
     .filter((task) => !task.fixed && !task.completed)
     .sort((a, b) => {
       // tasks are not ordered by skippable priority
-      //f (a.skippable === b.skippable) {
+      //if (a.skippable === b.skippable) {
         return timeStrToMinutes(a.startTime) - timeStrToMinutes(b.startTime);
       //}
       //return a.skippable ? 1 : -1;
