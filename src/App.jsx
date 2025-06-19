@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import TaskInput from "./components/TaskInput";
-import { applyPushMode, applyCompressMode } from './rescheduleUtils';
+import { applyPushMode, applyCompressMode } from "./rescheduleUtils";
 
 export default function App() {
   const [tasks, setTasks] = useState([]);
@@ -8,7 +8,7 @@ export default function App() {
   const [expandedTaskId, setExpandedTaskId] = useState(null);
   const [editedAttributes, setEditedAttributes] = useState({});
   const handleAttributeChange = (id, key, value) => {
-    setEditedAttributes(prev => ({
+    setEditedAttributes((prev) => ({
       ...prev,
       [id]: {
         ...prev[id],
@@ -17,20 +17,34 @@ export default function App() {
     }));
   };
 
-  const handleAdd = ({ text, duration, startTime, fixed, skippable, completed}) => {
+  const handleAdd = ({
+    text,
+    duration,
+    startTime,
+    fixed,
+    skippable,
+    completed,
+  }) => {
     setTasks((prev) => [
       ...prev,
-      { id: Date.now(), text, duration, startTime, fixed, skippable, completed },
+      {
+        id: Date.now(),
+        text,
+        duration,
+        startTime,
+        fixed,
+        skippable,
+        completed,
+      },
     ]);
   };
 
-  const taskToString = task => (
-   `[${task.startTime || '--:--'}] ${task.text} (${task.duration}m)` +
-    (task.fixed ? ' [Fixed]' : '') +
-    (task.completed ? ' [Done]' : '') +
-    (task.skipped ? ' [Skipped]' : '')
-  );
-  
+  const taskToString = (task) =>
+    `[${task.startTime || "--:--"}] ${task.text} (${task.duration}m)` +
+    (task.fixed ? " [Fixed]" : "") +
+    (task.completed ? " [Done]" : "") +
+    (task.skipped ? " [Skipped]" : "");
+
   useEffect(() => {
     const saved = localStorage.getItem("snapshift-tasks");
     if (saved) {
@@ -53,7 +67,9 @@ export default function App() {
         <TaskInput onAdd={handleAdd} />
 
         <div className="mt-4 space-y-2 border-t pt-4">
-          <h3 className="text-sm font-semibold text-gray-600">Task Management</h3>
+          <h3 className="text-sm font-semibold text-gray-600">
+            Task Management
+          </h3>
           {/* Button to delete all tasks */}
           {tasks.length > 0 && (
             <button
@@ -107,17 +123,30 @@ export default function App() {
             }}
           />
         </div>
-        
+
         <div className="mt-4 space-y-2 border-t pt-4">
           <h3 className="text-sm font-semibold text-gray-600">Reschedule</h3>
           <button
             onClick={() => {
               const now = new Date();
-              const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-              const [updated, skippedTasks] = applyPushMode(tasks, currentTimeStr);
+              const currentTimeStr = `${now
+                .getHours()
+                .toString()
+                .padStart(2, "0")}:${now
+                .getMinutes()
+                .toString()
+                .padStart(2, "0")}`;
+              const [updated, skippedTasks] = applyPushMode(
+                tasks,
+                currentTimeStr
+              );
               setTasks(updated);
-              alert(`${skippedTasks.length} task(s) could not be scheduled and were skipped.`);
-              console.log("Skipped tasks:\n" + skippedTasks.map(taskToString).join('\n'));
+              alert(
+                `${skippedTasks.length} task(s) could not be scheduled and were skipped.`
+              );
+              console.log(
+                "Skipped tasks:\n" + skippedTasks.map(taskToString).join("\n")
+              );
             }}
             className="mt-4 mb-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
           >
@@ -126,7 +155,13 @@ export default function App() {
           <button
             onClick={() => {
               const now = new Date();
-              const currentTimeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+              const currentTimeStr = `${now
+                .getHours()
+                .toString()
+                .padStart(2, "0")}:${now
+                .getMinutes()
+                .toString()
+                .padStart(2, "0")}`;
               const updated = applyCompressMode(tasks, currentTimeStr);
               setTasks(updated);
             }}
@@ -140,6 +175,12 @@ export default function App() {
       {/* Timeline */}
       <div className="col-span-1">
         <h2 className="text-lg font-semibold mt-8 mb-2">Timeline</h2>
+        {tasks.filter((task) => task.startTime).length === 0 && (
+          <p className="text-sm text-gray-500 italic">
+            No tasks scheduled yet. <br/>
+            Add tasks to populate your timeline.
+          </p>
+        )}
         <div className="space-y-1 border-l-2 border-gray-400 pl-4">
           {tasks
             .filter((task) => task.startTime)
@@ -159,7 +200,7 @@ export default function App() {
                           fixed: task.fixed,
                           skippable: task.skippable,
                           completed: task.completed,
-                        }
+                        },
                       });
                       setExpandedTaskId(task.id);
                     } else {
@@ -168,7 +209,8 @@ export default function App() {
                   }}
                 >
                   <div className="text-sm text-gray-600 mb-1">
-                    <span>{task.startTime}</span> · <span>{task.duration} min</span>
+                    <span>{task.startTime}</span> ·{" "}
+                    <span>{task.duration} min</span>
                   </div>
                   <div className="font-medium">{task.text}</div>
                 </div>
@@ -180,16 +222,26 @@ export default function App() {
                         type="text"
                         className="border px-2 py-1 rounded w-full"
                         defaultValue={task.text}
-                        onChange={(e) => handleAttributeChange(task.id, 'text', e.target.value)}
+                        onChange={(e) =>
+                          handleAttributeChange(task.id, "text", e.target.value)
+                        }
                       />
                     </div>
                     <div className="space-x-2">
-                      {['fixed', 'skippable', 'completed'].map((key) => (
+                      {["fixed", "skippable", "completed"].map((key) => (
                         <label key={key}>
                           <input
                             type="checkbox"
-                            checked={editedAttributes[task.id]?.[key] ?? task[key]}
-                            onChange={(e) => handleAttributeChange(task.id, key, e.target.checked)}
+                            checked={
+                              editedAttributes[task.id]?.[key] ?? task[key]
+                            }
+                            onChange={(e) =>
+                              handleAttributeChange(
+                                task.id,
+                                key,
+                                e.target.checked
+                              )
+                            }
                           />
                           {key.charAt(0).toUpperCase() + key.slice(1)}
                         </label>
@@ -199,7 +251,9 @@ export default function App() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          setTasks(prev => prev.filter(t => t.id !== task.id));
+                          setTasks((prev) =>
+                            prev.filter((t) => t.id !== task.id)
+                          );
                         }}
                         className="text-xs text-red-500 hover:underline"
                       >
@@ -208,8 +262,14 @@ export default function App() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          setTasks(prev => prev.map(t => t.id === task.id ? { ...t, ...editedAttributes[task.id] } : t));
-                          setEditedAttributes(prev => {
+                          setTasks((prev) =>
+                            prev.map((t) =>
+                              t.id === task.id
+                                ? { ...t, ...editedAttributes[task.id] }
+                                : t
+                            )
+                          );
+                          setEditedAttributes((prev) => {
                             const updated = { ...prev };
                             delete updated[task.id];
                             return updated;
@@ -227,7 +287,6 @@ export default function App() {
             ))}
         </div>
       </div>
-
     </div>
   );
 }
