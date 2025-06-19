@@ -4,7 +4,7 @@ export default function TaskInput({ onAdd }) {
   const DEFAULT_DURATION = 60; // minutes
   const DEFAULT_START_TIME = "09:00";
   const DEFAULT_FIXED = false;
-  const DEFAULT_SKIPPABLE = true;
+  const DEFAULT_SKIPPABLE = false;
 
   /*
   the task attributes below exhibit some dependencies
@@ -45,61 +45,65 @@ export default function TaskInput({ onAdd }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2 p-4">
-      <input
-        className="border rounded px-3 py-2 w-full"
-        type="text"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="Enter task..."
-      />
-      <div className="flex items-center gap-1">
+    <form onSubmit={handleSubmit} className="p-4">
+      <div className="flex gap-2 mb-2">
         <input
-          type="number"
-          min="1"
-          value={duration}
-          onChange={(e) => setDuration(e.target.value)}
-          className="border rounded px-3 py-2 w-20"
+          className="border rounded px-3 py-2 w-full"
+          type="text"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="Task..."
         />
-        <span className="text-sm text-gray-500">min</span>
+        <div className="flex items-center gap-1">
+          <input
+            type="number"
+            min="1"
+            value={duration}
+            onChange={(e) => setDuration(e.target.value)}
+            className="border rounded px-3 py-2 w-20"
+          />
+          <span className="text-sm text-gray-500">min</span>
+        </div>
+        <input
+          className="border rounded px-3 py-2 w-28"
+          type="time"
+          value={startTime}
+          onChange={(e) => setStartTime(e.target.value)}
+          title="Start time"
+        />
       </div>
-      <input
-        className="border rounded px-3 py-2 w-28"
-        type="time"
-        value={startTime}
-        onChange={(e) => setStartTime(e.target.value)}
-        title="Start time"
-      />
-      <label className="flex items-center gap-1 text-sm">
-        <input
-          type="checkbox"
-          checked={fixed}
-          onChange={(e) => setFixed(e.target.checked)}
-        />
-        Fixed
-      </label>
-      <label className="flex items-center gap-1 text-sm">
-        <input
-          type="checkbox"
-          checked={skippable}
-          onChange={(e) => setSkippable(e.target.checked)}
-        />
-        Skippable
-      </label>
-      <label className="flex items-center gap-1 text-sm">
-        <input
-          type="checkbox"
-          checked={completed}
-          onChange={(e) => setCompleted(e.target.checked)}
-        />
-        Completed
-      </label>
-      <button
-        type="submit"
-        className="bg-blue-500 text-white px-4 py-2 rounded"
-      >
-        Add
-      </button>
+      <div className="flex gap-4 items-center">
+        <label className="flex items-center gap-1 text-sm">
+          <input
+            type="checkbox"
+            checked={fixed}
+            onChange={(e) => setFixed(e.target.checked)}
+          />
+          Fixed
+        </label>
+        <label className="flex items-center gap-1 text-sm">
+          <input
+            type="checkbox"
+            checked={skippable}
+            onChange={(e) => setSkippable(e.target.checked)}
+          />
+          Skippable
+        </label>
+        <label className="flex items-center gap-1 text-sm">
+          <input
+            type="checkbox"
+            checked={completed}
+            onChange={(e) => setCompleted(e.target.checked)}
+          />
+          Completed
+        </label>
+        <button
+          type="submit"
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+        >
+          Add
+        </button>
+      </div>
     </form>
   );
 }
