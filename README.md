@@ -27,7 +27,6 @@ SnapShift is designed for **adaptive scheduling**: one-click rescheduling when l
 - [ ] "Start Now" rescheduler (Push Mode): reschedules all tasks to start from current time
 - [ ] Compress Mode: reschedules tasks to fit into remaining time until fixed day end
 - [ ] Mark tasks as fixed or skippable
-- [ ] Manual skip toggle before reschedule
 - [ ] Local storage only (no account required)
 
 ---
@@ -50,25 +49,13 @@ SnapShift is designed for **adaptive scheduling**: one-click rescheduling when l
 
 ## 🔁 Rescheduling Modes
 
-### Push Mode (Start Now)
-- All non-fixed tasks are re-anchored from current time
-- Task durations remain the same
-- Fixed tasks stay locked
+### Push Mode
+- Use case: need rescheduling when falling behind
+- All non-fixed, incomplete tasks are rescheduled to start sequentially from the current time, mostly preserving their original order.
 
 ### Compress Mode
-- Available time = Now → Day End (e.g., 9 PM)
-- Non-skippable tasks are scaled to fit
-- Skippable tasks dropped if not enough space
-
----
-
-## 🔮 Designed for Future Extensions
-
-Already structured to support:
-- Task types and time-of-day preference
-- Reflective prompts or feedback (“Why was this rescheduled?”)
-- Analytics (e.g., completion %, avg. overrun, skipped tasks)
-- Smart templates / recurring blocks
+- Use case: fast-tracking when ahead of schedule
+- All non-fixed, incomplete tasks are shifted earlier in the day if possible, filling available time slots before their original start time.
 
 ---
 
@@ -86,17 +73,27 @@ Already structured to support:
 
 ---
 
-## 🛣️ Next Steps (Issue Ideas)
+## 🛣️ Next Steps
+High priority
+- [ ] Add undo functionality for actions like Clear, Delete, Push, and Compress
+- [ ] Transition timeline UI to a time-grid layout (visual alignment by time)
+- [ ] Enable side-by-side or overlay comparison of old vs. new schedules after reschedule
 
-- [ ] Task creation and timeline rendering UI
-- [ ] Reschedule logic (Push + Compress modes)
-- [ ] LocalStorage for persistent task list
-- [ ] UI polish with basic mobile responsiveness
+Medium priority
+- [ ] Add settings (e.g. buffer between tasks, day start/end time)
+- [ ] Support multi-day schedules (essential for skipped-task rollover)
+- [ ] Improve Push/Compress logic if needed
 
----
 
-## Known Limitations
-- Push mode uses greedy scheduling: shorter tasks may be skipped if preceded by a long task that can’t fit.
+## 🔮 Potential Extensions
+- Task types and time-of-day preference
+- Analytics (e.g., completion %, avg. overrun, skipped tasks)
+- Smart templates / recurring blocks
+- Schedule rating after day ends -> to improve rescheduling algorithm
+
+
+
+
 
 ---
 

@@ -141,8 +141,9 @@ export default function App() {
                 currentTimeStr
               );
               setTasks(updated);
+
               alert(
-                `${skippedTasks.length} task(s) could not be scheduled and were skipped.`
+                `Push mode applied.\n${skippedTasks.length} task(s) could not be scheduled and were skipped.`
               );
               console.log(
                 "Skipped tasks:\n" + skippedTasks.map(taskToString).join("\n")
@@ -164,6 +165,7 @@ export default function App() {
                 .padStart(2, "0")}`;
               const updated = applyCompressMode(tasks, currentTimeStr);
               setTasks(updated);
+              alert(`Compress Mode applied.`);
             }}
             className="mt-2 mb-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
@@ -177,7 +179,7 @@ export default function App() {
         <h2 className="text-lg font-semibold mt-8 mb-2">Timeline</h2>
         {tasks.filter((task) => task.startTime).length === 0 && (
           <p className="text-sm text-gray-500 italic">
-            No tasks scheduled yet. <br/>
+            No tasks scheduled yet. <br />
             Add tasks to populate your timeline.
           </p>
         )}
@@ -218,7 +220,6 @@ export default function App() {
                     {task.fixed && <div>[Fixed]</div>}
                     {task.skippable && <div>[Skippable]</div>}
                   </div>
-                  
                 </div>
 
                 {expandedTaskId === task.id && (
