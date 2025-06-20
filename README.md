@@ -1,4 +1,4 @@
-# SnapShift
+# SnapnShift
 
 A minimal, offline-first scheduling tool that helps you **reschedule your day quickly** when things go off track.
 
