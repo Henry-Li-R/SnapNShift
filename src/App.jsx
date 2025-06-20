@@ -213,6 +213,12 @@ export default function App() {
                     <span>{task.duration} min</span>
                   </div>
                   <div className="font-medium">{task.text}</div>
+                  <div className="text-xs text-right mt-1 space-y-1">
+                    {task.completed && <div>[Completed]</div>}
+                    {task.fixed && <div>[Fixed]</div>}
+                    {task.skippable && <div>[Skippable]</div>}
+                  </div>
+                  
                 </div>
 
                 {expandedTaskId === task.id && (

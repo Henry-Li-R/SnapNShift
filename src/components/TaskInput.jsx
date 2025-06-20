@@ -89,14 +89,6 @@ export default function TaskInput({ onAdd }) {
           />
           Skippable
         </label>
-        <label className="flex items-center gap-1 text-sm">
-          <input
-            type="checkbox"
-            checked={completed}
-            onChange={(e) => setCompleted(e.target.checked)}
-          />
-          Completed
-        </label>
         <button
           type="submit"
           className="bg-blue-500 text-white px-4 py-2 rounded"
