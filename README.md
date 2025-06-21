@@ -8,7 +8,7 @@ A minimal, offline-first scheduling tool that helps you **reschedule your day qu
 
 Most productivity tools assume you’ll follow your plan exactly. In reality, we start tasks late, run over time, or need to skip things — and then our whole plan falls apart.
 
-SnapShift is designed for **adaptive scheduling**: one-click rescheduling when life gets in the way.
+SnapNShift is designed for **adaptive scheduling**: one-click rescheduling when life gets in the way.
 
 ---
 
@@ -69,12 +69,13 @@ SnapShift is designed for **adaptive scheduling**: one-click rescheduling when l
 
 ## 📌 Core User Story
 
-> I open SnapShift. I’m running 40 minutes late. I click "Shift Now." My whole day adjusts. I keep going — no stress, no mess.
+> I open SnapNShift. I’m running 40 minutes late. I click "Shift Now." My whole day adjusts. I keep going — no stress, no mess.
 
 ---
 
 ## 🛣️ Next Steps
 🧱 Foundation First
+
 	1.	Deploy to web so others can try it (e.g., Vercel, Netlify)
  
 	2.	Add backend with basic auth and schedule storage
@@ -88,6 +89,7 @@ SnapShift is designed for **adaptive scheduling**: one-click rescheduling when l
 ⸻
 
 🔧 Product Features (Dependent on backend)
+
 	1.	Undo actions like Clear, Delete, Push, and Compress
  
 	2.	User settings (e.g., buffer time, day start/end time)
@@ -99,6 +101,7 @@ SnapShift is designed for **adaptive scheduling**: one-click rescheduling when l
 ⸻
 
 🎨 UI Enhancements
+
 	1.	Timeline → time-grid layout (visually align task blocks by time)
  
 	2.	Improve mobile responsiveness and UX for task editing & timeline interaction
@@ -106,6 +109,7 @@ SnapShift is designed for **adaptive scheduling**: one-click rescheduling when l
 ⸻
 
 🧠 Logic Improvements
+
 	1.	Fine-tune Push / Compress logic (respect constraints, fix inefficiencies)
  
 	2.	Add input validation (e.g., conflicting times, invalid durations, duplicate entries)
