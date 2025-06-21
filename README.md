@@ -74,15 +74,32 @@ SnapShift is designed for **adaptive scheduling**: one-click rescheduling when l
 ---
 
 ## 🛣️ Next Steps
-High priority
-- [ ] Add undo functionality for actions like Clear, Delete, Push, and Compress
-- [ ] Transition timeline UI to a time-grid layout (visual alignment by time)
-- [ ] Enable side-by-side or overlay comparison of old vs. new schedules after reschedule
+🧱 Foundation First
+	1.	Deploy to web so others can try it (e.g., Vercel, Netlify)
+	2.	Add backend with basic auth and schedule storage
+	3.	Allow users to save/load their schedules
+	4.	Prepare for future features like settings, analytics, and cross-device sync (e.g., data models, endpoints)
+	5.	(Optional) Integrate with external calendars (e.g., Google Calendar API)
 
-Medium priority
-- [ ] Add settings (e.g. buffer between tasks, day start/end time)
-- [ ] Support multi-day schedules (essential for skipped-task rollover)
-- [ ] Improve Push/Compress logic if needed
+⸻
+
+🔧 Product Features (Dependent on backend)
+	1.	Undo actions like Clear, Delete, Push, and Compress
+	2.	User settings (e.g., buffer time, day start/end time)
+	3.	Support multi-day scheduling (e.g., rollover skipped tasks across days)
+	4.	Overlay or side-by-side comparisons of old vs. new schedules
+
+⸻
+
+🎨 UI Enhancements
+	1.	Timeline → time-grid layout (visually align task blocks by time)
+	2.	Improve mobile responsiveness and UX for task editing & timeline interaction
+
+⸻
+
+🧠 Logic Improvements
+	1.	Fine-tune Push / Compress logic (respect constraints, fix inefficiencies)
+	2.	Add input validation (e.g., conflicting times, invalid durations, duplicate entries)
 
 
 ## 🔮 Potential Extensions
