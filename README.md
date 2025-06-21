@@ -67,6 +67,27 @@ SnapNShift is designed for **adaptive scheduling**: one-click rescheduling when 
 
 ---
 
+## 📦 Installation
+
+Clone the repository:
+```bash
+git clone https://github.com/Henry-Li-R/SnapNShift.git
+cd SnapNShift
+```
+
+Install dependencies:
+```bash
+npm install
+```
+
+Start the development server:
+```bash
+npm run dev
+```
+
+
+---
+
 ## 📌 Core User Story
 
 > I open SnapNShift. I’m running 40 minutes late. I click "Shift Now." My whole day adjusts. I keep going — no stress, no mess.
