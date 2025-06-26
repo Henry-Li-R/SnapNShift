@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import TaskInput from "./components/TaskInput";
+import AuthPrompt from "./components/AuthPrompt";
 import { applyPushMode, applyCompressMode } from "./rescheduleUtils";
 
 export default function App() {
@@ -8,6 +9,15 @@ export default function App() {
   const [expandedTaskId, setExpandedTaskId] = useState(null);
   const [editedAttributes, setEditedAttributes] = useState({});
   const [authMode, setAuthMode] = useState(null); // 'guest' | 'user'
+
+  // On load, if a token exists, set authMode to "user"
+  useEffect(() => {
+    const token = localStorage.getItem("snapshift-token");
+    if (token) {
+      setAuthMode("user");
+    }
+  }, []);
+
   const handleAttributeChange = (id, key, value) => {
     setEditedAttributes((prev) => ({
       ...prev,
@@ -52,7 +62,7 @@ export default function App() {
       //console.log("Loaded from storage:", saved);
       setTasks(JSON.parse(saved));
     }
-    setInitialized(true); // run the useEffect() below AFTER initilized
+    setInitialized(true); // run the useEffect() below (snapshift-tasks) AFTER initilized
   }, []);
 
   useEffect(() => {
@@ -61,7 +71,7 @@ export default function App() {
     }
   }, [tasks, initialized]);
 
-  /* Prompt to Login or Continue as guest  */
+  // Login/Register UI and authMode selector
   if (authMode === null) {
     return (
       <div className="p-8 space-y-4">
@@ -70,19 +80,23 @@ export default function App() {
         <div className="space-x-4">
           <button
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            onClick={() => setAuthMode('user')}
+            onClick={() => setAuthMode("user")}
           >
             Login / Register
           </button>
           <button
             className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
-            onClick={() => setAuthMode('guest')}
+            onClick={() => setAuthMode("guest")}
           >
             Continue as Guest
           </button>
         </div>
       </div>
     );
+  }
+
+  if (authMode === "user" && !localStorage.getItem("snapshift-token")) {
+    return <AuthPrompt />;
   }
 
   return (
