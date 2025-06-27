@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export default function AuthPrompt() {
+export default function AuthPrompt({ onAuthSuccess }) {
   const [showRegister, setShowRegister] = useState(false);
   const [usernameInput, setUsernameInput] = useState("");
 
@@ -32,8 +32,8 @@ export default function AuthPrompt() {
               .then((res) => res.json())
               .then((data) => {
                 if (data.token) {
-                  localStorage.setItem("snapshift-token", data.token);
-                  window.location.reload();
+                  localStorage.setItem("snapnshift-token", data.token);
+                  onAuthSuccess();
                 } else {
                   alert(data.message || "Login failed");
                 }

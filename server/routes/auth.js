@@ -2,9 +2,14 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const { userExists, addUser } = require('../utils/userStore');
+const authenticateToken = require('../middleware/auth');
 require('dotenv').config();
 
 const router = express.Router();
+
+router.get('/verify', authenticateToken, (req, res) => {
+  res.json({ user: req.user });
+});
 
 router.post('/login', (req, res) => {
     const username = req.body.username?.trim();
