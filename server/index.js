@@ -6,7 +6,11 @@ const authenticateToken = require('./middleware/auth');
 const userRoutes = require('./routes/user');
 
 const app = express();
-app.use(cors({ origin: "http://localhost:5173" }));
+app.use(cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+}));
 app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);

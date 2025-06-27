@@ -14,7 +14,7 @@ export default function App() {
 
   // On load, if a valid token exists, set authMode to "user"
   useEffect(() => {
-    fetchWithAuth("http://localhost:3001/auth/verify", false)
+    fetchWithAuth({ url: "http://localhost:3001/auth/verify", alertUser: false })
       .then((res) => {
         if (res.ok) {
           setAuthMode("user");
@@ -75,7 +75,7 @@ export default function App() {
     }
 
     if (authMode === "user") {
-      fetchWithAuth("http://localhost:3001/user/tasks")
+      fetchWithAuth({ url: "http://localhost:3001/user/tasks" })
         .then((res) => res.json())
         .then((data) => {
           setTasks(data);
@@ -96,9 +96,13 @@ export default function App() {
     }
 
     if (authMode === "user") {
-      fetchWithAuth("http://localhost:3001/user/tasks", {
-        method: "POST",
-        body: JSON.stringify(tasks),
+      fetchWithAuth({
+        url: "http://localhost:3001/user/tasks",
+        alertUser: true,
+        options: {
+          method: "POST",
+          body: JSON.stringify(tasks),
+        },
       }).catch((err) => {
         console.error("Failed to save user tasks:", err);
       });

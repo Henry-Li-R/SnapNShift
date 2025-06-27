@@ -1,9 +1,9 @@
-export function fetchWithAuth(url, alertUser = true, options = {}) {
+export function fetchWithAuth({ url, alertUser = true, options = {} }) {
   const token = localStorage.getItem("snapnshift-token");
 
   const headers = {
     ...(options.headers || {}),
-    Authorization: `Bearer ${token}`,
+    ...(token && {Authorization: `Bearer ${token}`}),
     "Content-Type": "application/json",
   };
 
