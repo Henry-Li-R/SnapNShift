@@ -45,51 +45,55 @@ export default function Timeline({ tasks = [], setTasks }) {
             const top = timeToMinutes(task.startTime);
             const height = task.duration;
             return (
-              <div
-                key={task.id}
-                className="absolute left-16 right-4 bg-blue-200 rounded p-1 text-sm shadow"
-                style={{ top: `${top}px`, height: `${height}px` }}
-              >
-                {/* Task header (click to expand/collapse) */}
+              <div key={task.id}>
+                {/* Task box */}
                 <div
-                  className="cursor-pointer"
-                  onClick={() => {
-                    if (expandedTaskId !== task.id) {
-                      setEditedAttributes({
-                        [task.id]: {
-                          text: task.text,
-                          fixed: task.fixed,
-                          skippable: task.skippable,
-                          completed: task.completed,
-                        },
-                      });
-                      setExpandedTaskId(task.id);
-                    } else {
-                      setExpandedTaskId(null);
-                    }
-                  }}
+                  className="absolute left-16 right-4 bg-blue-200 rounded p-1 text-sm shadow z-0"
+                  style={{ top: `${top}px`, height: `${height}px` }}
                 >
-                  <div className="font-semibold">{task.text}</div>
-                  <div className="text-xs text-gray-600">
-                    {task.duration} min
-                    {task.fixed && " · Fixed"}
-                    {task.skippable && " · Skippable"}
-                    {task.completed && " · Done"}
+                  <div
+                    className="cursor-pointer"
+                    onClick={() => {
+                      if (expandedTaskId !== task.id) {
+                        setEditedAttributes({
+                          [task.id]: {
+                            text: task.text,
+                            fixed: task.fixed,
+                            skippable: task.skippable,
+                            completed: task.completed,
+                          },
+                        });
+                        setExpandedTaskId(task.id);
+                      } else {
+                        setExpandedTaskId(null);
+                      }
+                    }}
+                  >
+                    <div className="font-semibold">{task.text}</div>
+                    <div className="text-xs text-gray-600">
+                      {task.duration} min
+                      {task.fixed && " · Fixed"}
+                      {task.skippable && " · Skippable"}
+                      {task.completed && " · Done"}
+                    </div>
                   </div>
                 </div>
 
-                {/* Task detail editor (text + toggles + save/delete) */}
+                {/* Floating editor */}
                 {expandedTaskId === task.id && (
-                  <div className="mt-2 text-xs space-y-1 bg-white border border-gray-300 rounded p-1">
+                  <div
+                    className="absolute left-4 right-4 z-20 bg-white border border-gray-300 rounded p-2 shadow-lg"
+                    style={{ top: `${top + height + 4}px` }}
+                  >
                     <input
                       type="text"
-                      className="border px-1 py-0.5 rounded w-full"
+                      className="border px-1 py-0.5 rounded w-full mb-1"
                       defaultValue={task.text}
                       onChange={(e) =>
                         handleAttributeChange(task.id, "text", e.target.value)
                       }
                     />
-                    <div className="space-x-2">
+                    <div className="space-x-2 mb-1">
                       {["fixed", "skippable", "completed"].map((key) => (
                         <label key={key}>
                           <input
@@ -98,14 +102,10 @@ export default function Timeline({ tasks = [], setTasks }) {
                               editedAttributes[task.id]?.[key] ?? task[key]
                             }
                             onChange={(e) =>
-                              handleAttributeChange(
-                                task.id,
-                                key,
-                                e.target.checked
-                              )
+                              handleAttributeChange(task.id, key, e.target.checked)
                             }
                           />
-                          {key.charAt(0).toUpperCase() + key.slice(1)}
+                          {" " + key.charAt(0).toUpperCase() + key.slice(1)}
                         </label>
                       ))}
                     </div>
