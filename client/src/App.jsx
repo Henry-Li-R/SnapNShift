@@ -1,12 +1,31 @@
 import { useState, useEffect } from "react";
 import TaskInput from "./components/TaskInput";
-import { applyPushMode, applyCompressMode } from "./rescheduleUtils";
+import AuthPrompt from "./components/AuthPrompt";
+import { fetchWithAuth } from "./utils/fetchWithAuth";
+import { applyPushMode, applyCompressMode } from "./utils/rescheduleUtils";
+
 
 export default function App() {
   const [tasks, setTasks] = useState([]);
-  const [initialized, setInitialized] = useState(false);
+  const [hasLoadedTasks, setHasLoadedTasks] = useState(false);
   const [expandedTaskId, setExpandedTaskId] = useState(null);
   const [editedAttributes, setEditedAttributes] = useState({});
+  const [authMode, setAuthMode] = useState(null); // 'guest' | 'user'
+
+  // On load, if a valid token exists, set authMode to "user"
+  useEffect(() => {
+    fetchWithAuth({ url: "http://localhost:3001/auth/verify", alertUser: false })
+      .then((res) => {
+        if (res.ok) {
+          setAuthMode("user");
+        } 
+      })
+      .catch(() => {
+        console.log("No valid session, prompting login.");
+      });
+      
+  }, []);
+
   const handleAttributeChange = (id, key, value) => {
     setEditedAttributes((prev) => ({
       ...prev,
@@ -39,6 +58,7 @@ export default function App() {
     ]);
   };
 
+  // Load data upon initialization
   const taskToString = (task) =>
     `[${task.startTime || "--:--"}] ${task.text} (${task.duration}m)` +
     (task.fixed ? " [Fixed]" : "") +
@@ -46,24 +66,94 @@ export default function App() {
     (task.skipped ? " [Skipped]" : "");
 
   useEffect(() => {
-    const saved = localStorage.getItem("snapshift-tasks");
-    if (saved) {
-      //console.log("Loaded from storage:", saved);
-      setTasks(JSON.parse(saved));
+    if (authMode === "guest") {
+      const saved = localStorage.getItem("snapnshift-tasks");
+      if (saved) {
+        setTasks(JSON.parse(saved));
+      }
+      setHasLoadedTasks(true);
     }
-    setInitialized(true); // run the useEffect() below AFTER initilized
-  }, []);
 
+    if (authMode === "user") {
+      fetchWithAuth({ url: "http://localhost:3001/user/tasks" })
+        .then((res) => res.json())
+        .then((data) => {
+          setTasks(data);
+          setHasLoadedTasks(true);
+        })
+        .catch((err) => {
+          console.error("Failed to load user tasks:", err);
+        });
+    }
+  }, [authMode]);
+
+  // Save tasks after initialization
   useEffect(() => {
-    if (initialized) {
-      localStorage.setItem("snapshift-tasks", JSON.stringify(tasks));
-    }
-  }, [tasks, initialized]);
+    if (!hasLoadedTasks) return;
 
+    if (authMode === "guest") {
+      localStorage.setItem("snapnshift-tasks", JSON.stringify(tasks));
+    }
+
+    if (authMode === "user") {
+      fetchWithAuth({
+        url: "http://localhost:3001/user/tasks",
+        alertUser: true,
+        options: {
+          method: "POST",
+          body: JSON.stringify(tasks),
+        },
+      }).catch((err) => {
+        console.error("Failed to save user tasks:", err);
+      });
+    }
+  }, [tasks, hasLoadedTasks, authMode]);
+
+  // Login/Register UI and authMode selector
+  if (authMode === null) {
+    return (
+      <div className="p-8 space-y-4">
+        <h2 className="text-xl font-bold">Welcome to snapnshift</h2>
+        <p>Please choose how you'd like to continue:</p>
+        <div className="space-x-4">
+          <button
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            onClick={() => setAuthMode("authAttempt")}
+          >
+            Login / Register
+          </button>
+          <button
+            className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+            onClick={() => setAuthMode("guest")}
+          >
+            Continue as Guest
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (authMode === "authAttempt") {
+    return <AuthPrompt onAuthSuccess={() => setAuthMode("user")} />
+  }
+  
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 px-4 py-8">
+      {/* logout */}
+      {authMode === "user" && (
+        <button
+          onClick={() => {
+            localStorage.removeItem("snapnshift-token");
+            setHasLoadedTasks(false);
+            setAuthMode(null); // return to welcome screen
+          }}
+          className="absolute top-4 right-4 text-sm text-red-500 hover:underline"
+        >
+          Logout
+        </button>
+      )}
       <div className="col-span-1">
-        <h1 className="text-2xl font-bold mb-4">SnapShift</h1>
+        <h1 className="text-2xl font-bold mb-4">snapnshift</h1>
         <TaskInput onAdd={handleAdd} />
 
         <div className="mt-4 space-y-2 border-t pt-4">
@@ -88,7 +178,7 @@ export default function App() {
               const url = URL.createObjectURL(blob);
               const a = document.createElement("a");
               a.href = url;
-              a.download = "snapshift-tasks.json";
+              a.download = "snapnshift-tasks.json";
               a.click();
               URL.revokeObjectURL(url);
             }}
