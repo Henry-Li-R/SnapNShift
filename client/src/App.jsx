@@ -1,15 +1,13 @@
 import { useState, useEffect } from "react";
-import TaskInput from "./components/TaskInput";
+import TaskPanel from "./components/TaskPanel";
 import AuthPrompt from "./components/AuthPrompt";
 import Timeline from "./components/Timeline";
 import { fetchWithAuth } from "./utils/fetchWithAuth";
-import { applyPushMode, applyCompressMode } from "./utils/rescheduleUtils";
 
 
 export default function App() {
   const [tasks, setTasks] = useState([]);
   const [hasLoadedTasks, setHasLoadedTasks] = useState(false);
-  const [editedAttributes, setEditedAttributes] = useState({});
   const [authMode, setAuthMode] = useState(null); // 'guest' | 'user'
 
   // On load, if a valid token exists, set authMode to "user"
@@ -26,15 +24,7 @@ export default function App() {
       
   }, []);
 
-  const handleAttributeChange = (id, key, value) => {
-    setEditedAttributes((prev) => ({
-      ...prev,
-      [id]: {
-        ...prev[id],
-        [key]: value,
-      },
-    }));
-  };
+
 
   const handleAdd = ({
     text,
@@ -152,116 +142,15 @@ export default function App() {
           Logout
         </button>
       )}
+      {/* task panel, to add or reschedule tasks */}
       <div className="col-span-1">
         <h1 className="text-2xl font-bold mb-4">snapnshift</h1>
-        <TaskInput onAdd={handleAdd} />
-
-        <div className="mt-4 space-y-2 border-t pt-4">
-          <h3 className="text-sm font-semibold text-gray-600">
-            Task Management
-          </h3>
-          {/* Button to delete all tasks */}
-          {tasks.length > 0 && (
-            <button
-              onClick={() => setTasks([])}
-              className="mt-4 text-sm text-gray-500 hover:underline"
-            >
-              Clear all
-            </button>
-          )}
-          {/*Export Tasks*/}
-          <button
-            onClick={() => {
-              const blob = new Blob([JSON.stringify(tasks, null, 2)], {
-                type: "application/json",
-              });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
-              a.href = url;
-              a.download = "snapnshift-tasks.json";
-              a.click();
-              URL.revokeObjectURL(url);
-            }}
-          >
-            Export tasks
-          </button>
-          {/* Import Tasks */}
-          <input
-            type="file"
-            accept="application/json"
-            onChange={(e) => {
-              const file = e.target.files[0];
-              if (!file) return;
-              const reader = new FileReader();
-
-              reader.onload = (e) => {
-                try {
-                  // can add more structural validation
-                  const importedTasks = JSON.parse(e.target.result);
-                  if (Array.isArray(importedTasks)) {
-                    setTasks(importedTasks);
-                  } else {
-                    alert("Invalid file format.");
-                  }
-                } catch (err) {
-                  console.error("Failed to import tasks:", err);
-                  alert("Failed to import tasks.");
-                }
-              };
-
-              reader.readAsText(file);
-            }}
-          />
-        </div>
-
-        <div className="mt-4 space-y-2 border-t pt-4">
-          <h3 className="text-sm font-semibold text-gray-600">Reschedule</h3>
-          <button
-            onClick={() => {
-              const now = new Date();
-              const currentTimeStr = `${now
-                .getHours()
-                .toString()
-                .padStart(2, "0")}:${now
-                .getMinutes()
-                .toString()
-                .padStart(2, "0")}`;
-              const [updated, skippedTasks] = applyPushMode(
-                tasks,
-                currentTimeStr
-              );
-              setTasks(updated);
-
-              alert(
-                `Push mode applied.\n${skippedTasks.length} task(s) could not be scheduled and were skipped.`
-              );
-              console.log(
-                "Skipped tasks:\n" + skippedTasks.map(taskToString).join("\n")
-              );
-            }}
-            className="mt-4 mb-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-          >
-            Push Now
-          </button>
-          <button
-            onClick={() => {
-              const now = new Date();
-              const currentTimeStr = `${now
-                .getHours()
-                .toString()
-                .padStart(2, "0")}:${now
-                .getMinutes()
-                .toString()
-                .padStart(2, "0")}`;
-              const updated = applyCompressMode(tasks, currentTimeStr);
-              setTasks(updated);
-              alert(`Compress Mode applied.`);
-            }}
-            className="mt-2 mb-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Compress Now
-          </button>
-        </div>
+        <TaskPanel
+          tasks={tasks}
+          setTasks={setTasks}
+          onAdd={handleAdd}
+          taskToString={taskToString}
+        />
       </div>
 
       {/* Timeline */}
