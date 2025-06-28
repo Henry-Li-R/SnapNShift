@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import TaskInput from "./components/TaskInput";
 import AuthPrompt from "./components/AuthPrompt";
+import Timeline from "./components/Timeline";
 import { fetchWithAuth } from "./utils/fetchWithAuth";
 import { applyPushMode, applyCompressMode } from "./utils/rescheduleUtils";
 
@@ -8,7 +9,6 @@ import { applyPushMode, applyCompressMode } from "./utils/rescheduleUtils";
 export default function App() {
   const [tasks, setTasks] = useState([]);
   const [hasLoadedTasks, setHasLoadedTasks] = useState(false);
-  const [expandedTaskId, setExpandedTaskId] = useState(null);
   const [editedAttributes, setEditedAttributes] = useState({});
   const [authMode, setAuthMode] = useState(null); // 'guest' | 'user'
 
@@ -273,116 +273,7 @@ export default function App() {
             Add tasks to populate your timeline.
           </p>
         )}
-        <div className="space-y-1 border-l-2 border-gray-400 pl-4">
-          {tasks
-            .filter((task) => task.startTime)
-            .sort((a, b) => a.startTime.localeCompare(b.startTime))
-            .map((task) => (
-              <div
-                key={task.id}
-                className="bg-blue-100 p-2 rounded-md shadow-sm transition-opacity duration-200 hover:opacity-80"
-              >
-                <div
-                  className="cursor-pointer"
-                  onClick={() => {
-                    if (expandedTaskId !== task.id) {
-                      setEditedAttributes({
-                        [task.id]: {
-                          text: task.text,
-                          fixed: task.fixed,
-                          skippable: task.skippable,
-                          completed: task.completed,
-                        },
-                      });
-                      setExpandedTaskId(task.id);
-                    } else {
-                      setExpandedTaskId(null);
-                    }
-                  }}
-                >
-                  <div className="text-sm text-gray-600 mb-1">
-                    <span>{task.startTime}</span> ·{" "}
-                    <span>{task.duration} min</span>
-                  </div>
-                  <div className="font-medium">{task.text}</div>
-                  <div className="text-xs text-right mt-1 space-y-1">
-                    {task.completed && <div>[Completed]</div>}
-                    {task.fixed && <div>[Fixed]</div>}
-                    {task.skippable && <div>[Skippable]</div>}
-                  </div>
-                </div>
-
-                {expandedTaskId === task.id && (
-                  <div className="mt-2 text-sm text-gray-700 space-y-1">
-                    <div>
-                      <input
-                        type="text"
-                        className="border px-2 py-1 rounded w-full"
-                        defaultValue={task.text}
-                        onChange={(e) =>
-                          handleAttributeChange(task.id, "text", e.target.value)
-                        }
-                      />
-                    </div>
-                    <div className="space-x-2">
-                      {["fixed", "skippable", "completed"].map((key) => (
-                        <label key={key}>
-                          <input
-                            type="checkbox"
-                            checked={
-                              editedAttributes[task.id]?.[key] ?? task[key]
-                            }
-                            onChange={(e) =>
-                              handleAttributeChange(
-                                task.id,
-                                key,
-                                e.target.checked
-                              )
-                            }
-                          />
-                          {key.charAt(0).toUpperCase() + key.slice(1)}
-                        </label>
-                      ))}
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setTasks((prev) =>
-                            prev.filter((t) => t.id !== task.id)
-                          );
-                        }}
-                        className="text-xs text-red-500 hover:underline"
-                      >
-                        Delete
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setTasks((prev) =>
-                            prev.map((t) =>
-                              t.id === task.id
-                                ? { ...t, ...editedAttributes[task.id] }
-                                : t
-                            )
-                          );
-                          setEditedAttributes((prev) => {
-                            const updated = { ...prev };
-                            delete updated[task.id];
-                            return updated;
-                          });
-                          setExpandedTaskId(null); // Close expanded view after saving
-                        }}
-                        className="text-xs text-blue-500 hover:underline"
-                      >
-                        Save
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-        </div>
+        <Timeline tasks={tasks} setTasks={setTasks} />
       </div>
     </div>
   );
