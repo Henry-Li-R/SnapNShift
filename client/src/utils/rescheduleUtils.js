@@ -24,14 +24,16 @@ function minutesToTimeStr(minutes) {
  * @param {string} currentTimeStr - Current time as string (e.g., "15:00")
  */
 function applyPushMode(tasks, currentTimeStr) {
+  const clonedTasks = tasks.map((task) => ({ ...task }));
+
   // Separate fixed and non-fixed tasks
-  const fixedTasks = tasks
+  const fixedTasks = clonedTasks
     .filter((task) => task.fixed)
     .sort(
       (a, b) => timeStrToMinutes(a.startTime) - timeStrToMinutes(b.startTime)
     );
 
-  const nonFixedTasks = tasks
+  const nonFixedTasks = clonedTasks
     .filter((task) => !task.fixed && !task.completed && !task.skipped)
     .sort((a, b) => {
       if (a.skippable === b.skippable) return 0;
@@ -67,8 +69,8 @@ function applyPushMode(tasks, currentTimeStr) {
 
   // fallbackReschedule(nonFixedTasks, timeStrToMinutes(currentTimeStr), fixedTasks, scheduledTasks);
 
-  const completedTasks = tasks.filter((task) => task.completed);
-  const skippedTasks = tasks.filter((task) => task.skipped);
+  const completedTasks = clonedTasks.filter((task) => task.completed);
+  const skippedTasks = clonedTasks.filter((task) => task.skipped);
   return [
     [...fixedTasks, ...completedTasks, ...scheduledTasks].sort((a, b) => {
       const aTime = a.startTime ? timeStrToMinutes(a.startTime) : Infinity;
@@ -176,13 +178,15 @@ function fallbackReschedule(tasks, pointer, fixedTasks, scheduledTasks) {
  * @returns {Array} New array of rescheduled tasks, sorted by startTime.
  */
 function applyCompressMode(tasks, currentTimeStr) {
-  const fixedTasks = tasks
+  const clonedTasks = tasks.map((task) => ({ ...task }));
+
+  const fixedTasks = clonedTasks
     .filter((task) => task.fixed)
     .sort(
       (a, b) => timeStrToMinutes(a.startTime) - timeStrToMinutes(b.startTime)
     );
 
-  const nonFixedTasks = tasks
+  const nonFixedTasks = clonedTasks
     .filter((task) => !task.fixed && !task.completed)
     .sort((a, b) => {
       // tasks are not ordered by skippable priority
@@ -215,7 +219,7 @@ function applyCompressMode(tasks, currentTimeStr) {
     
   }
 
-  const completedTasks = tasks.filter((task) => task.completed);
+  const completedTasks = clonedTasks.filter((task) => task.completed);
 
   const finalTasks = [...fixedTasks, ...scheduledTasks, ...completedTasks].sort(
     (a, b) => {

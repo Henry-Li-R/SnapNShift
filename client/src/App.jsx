@@ -10,6 +10,29 @@ export default function App() {
   const [hasLoadedTasks, setHasLoadedTasks] = useState(false);
   const [authMode, setAuthMode] = useState(null); // 'guest' | 'user'
 
+  const [rescheduledTasks, setRescheduledTasks] = useState([]);
+  const [skippedTasks, setSkippedTasks] = useState([]);
+  const [showOverlay, setShowOverlay] = useState(false);
+
+  const handlePreviewReschedule = (updated, skipped) => {
+    setRescheduledTasks(updated);
+    setSkippedTasks(skipped);
+    setShowOverlay(true);
+  };
+
+  const handleRescheduleConfirm = () => {
+    setTasks(rescheduledTasks);
+    setRescheduledTasks([]);
+    setSkippedTasks([]);
+    setShowOverlay(false);
+  };
+
+  const handleRescheduleCancel = () => {
+    setRescheduledTasks([]);
+    setSkippedTasks([]);
+    setShowOverlay(false);
+  };
+
   // On load, if a valid token exists, set authMode to "user"
   useEffect(() => {
     fetchWithAuth({ url: "http://localhost:3001/auth/verify", alertUser: false })
@@ -150,6 +173,9 @@ export default function App() {
           setTasks={setTasks}
           onAdd={handleAdd}
           taskToString={taskToString}
+          onPreviewReschedule={handlePreviewReschedule}
+          onRescheduleConfirm={handleRescheduleConfirm}
+          onRescheduleCancel={handleRescheduleCancel}
         />
       </div>
 
@@ -162,7 +188,12 @@ export default function App() {
             Add tasks to populate your timeline.
           </p>
         )}
-        <Timeline tasks={tasks} setTasks={setTasks} />
+        <Timeline
+          tasks={tasks}
+          setTasks={setTasks}
+          rescheduledTasks={rescheduledTasks}
+          showOverlay={showOverlay}
+        />
       </div>
     </div>
   );

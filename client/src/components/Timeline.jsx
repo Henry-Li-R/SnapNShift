@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function Timeline({ tasks = [], setTasks }) {
+export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], showOverlay = false }) {
   const [expandedTaskId, setExpandedTaskId] = useState(null);
   const [editedAttributes, setEditedAttributes] = useState({});
 
@@ -148,6 +148,28 @@ export default function Timeline({ tasks = [], setTasks }) {
               </div>
             );
           })}
+        {showOverlay &&
+          rescheduledTasks
+            .filter((task) => task.startTime)
+            .map((task) => {
+              const top = timeToMinutes(task.startTime);
+              const height = task.duration;
+              return (
+                <div
+                  key={`rescheduled-${task.id}`}
+                  className="absolute left-16 right-4 bg-yellow-300 bg-opacity-80 rounded p-1 text-sm shadow z-10 border border-yellow-600"
+                  style={{ top: `${top}px`, height: `${height}px`, pointerEvents: 'none' }}
+                >
+                  <div className="font-semibold">{task.text}</div>
+                  <div className="text-xs text-gray-700">
+                    {task.duration} min
+                    {task.fixed && " · Fixed"}
+                    {task.skippable && " · Skippable"}
+                    {task.completed && " · Done"}
+                  </div>
+                </div>
+              );
+            })}
       </div>
     </div>
   );
