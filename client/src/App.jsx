@@ -176,6 +176,7 @@ export default function App() {
           onPreviewReschedule={handlePreviewReschedule}
           onRescheduleConfirm={handleRescheduleConfirm}
           onRescheduleCancel={handleRescheduleCancel}
+          showOverlay={showOverlay}
         />
       </div>
 

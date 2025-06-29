@@ -8,7 +8,8 @@ export default function TaskPanel({
   taskToString,
   onPreviewReschedule,
   onRescheduleConfirm,
-  onRescheduleCancel
+  onRescheduleCancel,
+  showOverlay
 }) {
   return (
     <>
@@ -106,7 +107,7 @@ export default function TaskPanel({
         >
           Compress Now
         </button>
-        {onRescheduleConfirm && onRescheduleCancel && (
+        {showOverlay && (
           <div className="mt-2 flex space-x-4">
             <button
               onClick={onRescheduleConfirm}
