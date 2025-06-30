@@ -38,7 +38,9 @@ function applyPushMode(tasks, currentTimeStr) {
   const nonFixedTasks = clonedTasks
     .filter((task) => !task.fixed && !task.completed && !task.skipped)
     .sort((a, b) => {
-      if (a.skippable === b.skippable) return 0;
+      if (a.skippable === b.skippable) {
+        return timeStrToMinutes(a.startTime) - timeStrToMinutes(b.startTime);
+      }
       return a.skippable ? 1 : -1; // non-skippable first
     });
 
@@ -58,7 +60,7 @@ function applyPushMode(tasks, currentTimeStr) {
     }
     task.startTime = minutesToTimeStr(newStart);
     task.skipped = false;
-    pointer = newStart + task.duration;
+    pointer = newStart + task.duration + BUFFER_BETWEEN_TASKS;
     scheduledTasks.push({ ...task });
   }
   // fallbackReschedule() will be used if current
@@ -94,7 +96,7 @@ function applyPushMode(tasks, currentTimeStr) {
 function findNextAvailableSlot(task, pointer, fixedTasks, scheduledTasks) {
   let candidateStart = Math.max(pointer, 0);
 
-  while (candidateStart + task.duration + BUFFER_BETWEEN_TASKS <= DAY_END) {
+  while (candidateStart + task.duration <= DAY_END) {
     const conflict = fixedTasks.concat(scheduledTasks).some((otherTask) => {
       const otherStart = timeStrToMinutes(otherTask.startTime);
       const otherEnd = otherStart + otherTask.duration + BUFFER_BETWEEN_TASKS;
@@ -212,9 +214,9 @@ function applyCompressMode(tasks, currentTimeStr) {
 
     if (newStart < originalStart) {
       task.startTime = minutesToTimeStr(newStart);
-      pointer = newStart + task.duration;
+      pointer = newStart + task.duration + BUFFER_BETWEEN_TASKS;
     } else {
-      pointer = originalStart + task.duration;
+      pointer = originalStart + task.duration + BUFFER_BETWEEN_TASKS;
     }
 
     scheduledTasks.push({ ...task });
@@ -238,7 +240,7 @@ function findEarliestAvailableSlot(task, pointer, fixedTasks, scheduledTasks) {
   const allTasks = fixedTasks.concat(scheduledTasks);
   let candidateStart = pointer;
 
-  while (candidateStart + task.duration + BUFFER_BETWEEN_TASKS <= DAY_END) {
+  while (candidateStart + task.duration <= DAY_END) {
     const conflict = allTasks.some((other) => {
       const otherStart = timeStrToMinutes(other.startTime);
       const otherEnd = otherStart + other.duration + BUFFER_BETWEEN_TASKS;
