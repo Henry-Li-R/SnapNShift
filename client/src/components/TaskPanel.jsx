@@ -1,5 +1,5 @@
 import TaskInput from "./TaskInput";
-import { applyPushMode, applyCompressMode } from "../utils/rescheduleUtils";
+import { applyPushMode, applyCompressMode, timeStrToMinutes } from "../utils/rescheduleUtils";
 
 export default function TaskPanel({
   tasks,
@@ -11,6 +11,15 @@ export default function TaskPanel({
   onRescheduleCancel,
   showOverlay
 }) {
+  const hasPastIncompleteTasks = tasks.some(task => {
+    if (task.completed || !task.startTime || task.duration == null) return false;
+    const startTimeMinutes = timeStrToMinutes(task.startTime);
+    const now = new Date();
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    const buffer = 1;
+    return startTimeMinutes - buffer < nowMinutes;
+  });
+
   return (
     <>
       <TaskInput onAdd={onAdd} />
@@ -89,24 +98,33 @@ export default function TaskPanel({
         >
           Push Now
         </button>
-        <button
-          onClick={() => {
-            const now = new Date();
-            const currentTimeStr = `${now
-              .getHours()
-              .toString()
-              .padStart(2, "0")}:${now
-              .getMinutes()
-              .toString()
-              .padStart(2, "0")}`;
-            const updated = applyCompressMode(tasks, currentTimeStr);
-            alert(`Compress Mode applied.`);
-            onPreviewReschedule(updated, []);
-          }}
-          className="mt-2 mb-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        <span
+          title={
+            hasPastIncompleteTasks
+              ? "Cannot compress: a past task is incomplete."
+              : ""
+          }
         >
-          Compress Now
-        </button>
+          <button
+            onClick={() => {
+              const now = new Date();
+              const currentTimeStr = `${now
+                .getHours()
+                .toString()
+                .padStart(2, "0")}:${now
+                .getMinutes()
+                .toString()
+                .padStart(2, "0")}`;
+              const updated = applyCompressMode(tasks, currentTimeStr);
+              alert(`Compress Mode applied.`);
+              onPreviewReschedule(updated, []);
+            }}
+            className="mt-2 mb-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-blue-300"
+            disabled={hasPastIncompleteTasks}
+          >
+            Compress Now
+          </button>
+        </span>
         {showOverlay && (
           <div className="mt-2 flex space-x-4">
             <button

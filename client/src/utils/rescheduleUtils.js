@@ -1,12 +1,12 @@
 const DAY_END = 21 * 60; // 9:00 PM
 
 /* Helpers */
-function timeStrToMinutes(timeStr) {
+export function timeStrToMinutes(timeStr) {
   const [hours, minutes] = timeStr.split(":").map(Number);
   return hours * 60 + minutes;
 }
 
-function minutesToTimeStr(minutes) {
+export function minutesToTimeStr(minutes) {
   const hrs = Math.floor(minutes / 60);
   const mins = minutes % 60;
   return `${hrs.toString().padStart(2, "0")}:${mins

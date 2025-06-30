@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { timeStrToMinutes } from "../utils/rescheduleUtils";
 
 export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], showOverlay = false }) {
   const [expandedTaskId, setExpandedTaskId] = useState(null);
@@ -6,10 +7,6 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
 
   const hours = Array.from({ length: 24 }, (_, i) => i);
 
-  const timeToMinutes = (timeStr) => {
-    const [h, m] = timeStr.split(":").map(Number);
-    return h * 60 + m;
-  };
 
   const handleAttributeChange = (id, key, value) => {
     setEditedAttributes((prev) => ({
@@ -42,7 +39,7 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
         {tasks
           .filter((task) => task.startTime)
           .map((task) => {
-            const top = timeToMinutes(task.startTime);
+            const top = timeStrToMinutes(task.startTime);
             const height = task.duration;
             return (
               <div key={task.id}>
@@ -152,7 +149,7 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
           rescheduledTasks
             .filter((task) => task.startTime)
             .map((task) => {
-              const top = timeToMinutes(task.startTime);
+              const top = timeStrToMinutes(task.startTime);
               const height = task.duration;
               return (
                 <div
