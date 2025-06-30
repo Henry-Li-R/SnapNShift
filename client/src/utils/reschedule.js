@@ -2,7 +2,7 @@ const DAY_END = 24 * 60; // end of day: 12 AM
 
 const BUFFER_BETWEEN_TASKS = 5; // in minutes
 
-/* Helpers */
+/* Helpers: Conversion between time formats */
 export function timeStrToMinutes(timeStr) {
   const [hours, minutes] = timeStr.split(":").map(Number);
   return hours * 60 + minutes;
@@ -16,27 +16,19 @@ export function minutesToTimeStr(minutes) {
     .padStart(2, "0")}`;
 }
 
-/* Push Mode */
-/**
- * Applies push mode rescheduling to tasks.
- * @param {Array} tasks - Array of task objects. Each task has:
- *   - startTime: string (e.g., "14:30") or null
- *   - duration: number (minutes)
- *   - fixed: boolean
- * @param {string} currentTimeStr - Current time as string (e.g., "15:00")
- */
+/* Push Mode Rescheduling Logic */
 function applyPushMode(tasks, currentTimeStr) {
   const clonedTasks = tasks.map((task) => ({ ...task }));
 
   // Separate fixed and non-fixed tasks
   const fixedTasks = clonedTasks
-    .filter((task) => task.fixed)
+    .filter((task) => task.fixed && !task.completed)
     .sort(
       (a, b) => timeStrToMinutes(a.startTime) - timeStrToMinutes(b.startTime)
     );
 
   const nonFixedTasks = clonedTasks
-    .filter((task) => !task.fixed && !task.completed && !task.skipped)
+    .filter((task) => !task.fixed && !task.completed)
     .sort((a, b) => {
       if (a.skippable === b.skippable) {
         return timeStrToMinutes(a.startTime) - timeStrToMinutes(b.startTime);
@@ -47,6 +39,7 @@ function applyPushMode(tasks, currentTimeStr) {
   let pointer = timeStrToMinutes(currentTimeStr);
   const scheduledTasks = [];
 
+  // Attempt to find slot and reschedule each non-fixed task
   for (const task of nonFixedTasks) {
     const newStart = findNextAvailableSlot(
       task,
@@ -63,18 +56,11 @@ function applyPushMode(tasks, currentTimeStr) {
     pointer = newStart + task.duration + BUFFER_BETWEEN_TASKS;
     scheduledTasks.push({ ...task });
   }
-  // fallbackReschedule() will be used if current
-  // applyPushMode() method is ineffective in fitting
-  // as many tasks as possible
-
-  // fallbackReschedule() logic is not tested yet
-  // since unable to devise test case
-
-
-  // fallbackReschedule(nonFixedTasks, timeStrToMinutes(currentTimeStr), fixedTasks, scheduledTasks);
 
   const completedTasks = clonedTasks.filter((task) => task.completed);
   const skippedTasks = clonedTasks.filter((task) => task.skipped);
+
+  // Return all scheduled tasks sorted by startTime
   return [
     [...fixedTasks, ...completedTasks, ...scheduledTasks].sort((a, b) => {
       const aTime = a.startTime ? timeStrToMinutes(a.startTime) : Infinity;
@@ -85,14 +71,7 @@ function applyPushMode(tasks, currentTimeStr) {
   ];
 }
 
-/**
- * ensures task only gets rescheduled to start later
- * @param {*} task 
- * @param {*} pointer 
- * @param {*} fixedTasks 
- * @param {*} scheduledTasks 
- * @returns 
- */
+/* Find earliest non-conflicting time slot starting from pointer */
 function findNextAvailableSlot(task, pointer, fixedTasks, scheduledTasks) {
   let candidateStart = Math.max(pointer, 0);
 
@@ -104,7 +83,6 @@ function findNextAvailableSlot(task, pointer, fixedTasks, scheduledTasks) {
       return candidateStart < otherEnd && otherStart < candidateEnd;
     });
     if (!conflict) {
-      // ensures task only gets rescheduled to start later
       return Math.max(timeStrToMinutes(task.startTime), candidateStart);
     }
     candidateStart++;
@@ -113,79 +91,13 @@ function findNextAvailableSlot(task, pointer, fixedTasks, scheduledTasks) {
   return null;
 }
 
-/**
- * Schedule skipped task in any slots that have been missed
- * May mutate scheduleTasks array by adding tasks
- * @param {*} tasks 
- * @param {*} pointer 
- * @param {*} fixedTasks 
- * @param {*} scheduledTasks 
- */
-/*
-function fallbackReschedule(tasks, pointer, fixedTasks, scheduledTasks) {
-  const unscheduled = tasks
-    .filter((task) => task.skipped && !task.completed)
-    .sort((a,b) => {
-      if (a.skippable === b.skippable) {
-        return timeStrToMinutes(a.startTime) - timeStrToMinutes(b.startTime);
-      }
-      return a.skippable ? 1 : -1;
-    });
-
-  for (let time = pointer; time < DAY_END; time++) {
-    for (const task of unscheduled) {
-      const conflict = fixedTasks.concat(scheduledTasks).some((otherTask) => {
-        const otherStart = timeStrToMinutes(otherTask.startTime);
-        const otherEnd = otherStart + otherTask.duration;
-        const taskEnd = time + task.duration;
-        return time < otherEnd && otherStart < taskEnd;
-      });
-      if (!conflict && time + task.duration <= DAY_END) {
-        task.startTime = minutesToTimeStr(time);
-        task.skipped = false;
-        scheduledTasks.push({ ...task });
-        break;
-      }
-    }
-  }
-}
-*/
-
-/* Compress code */
-/**
- * Applies compress mode to optimize task layout.
- *
- * Compress mode attempts to move non-fixed, incomplete tasks earlier in the day
- * (starting from the current time), as long as doing so does not create overlap
- * with already scheduled tasks (fixed or previously compressed).
- *
- * Behavior:
- * - Only non-fixed, incomplete, non-skipped tasks are considered for compression.
- * - Tasks are compressed in the order of their original start times.
- * - Tasks are not reordered by skippable status or priority.
- * - A task is compressed only if an earlier available time slot is found.
- * - Fixed, completed, and skipped tasks remain unchanged.
- *
- * Assumptions:
- * - Input task array includes valid `startTime` strings (e.g., "14:30").
- * - Compress mode does not guarantee minimal gaps, only left-shifting when possible.
- * - The relative order of non-fixed tasks is preserved after compression.
- *
- * @param {Array} tasks - Array of task objects. Each task includes:
- *   - startTime: string (e.g., "14:30")
- *   - duration: number (minutes)
- *   - fixed: boolean
- *   - completed: boolean
- *   - skipped: boolean
- *   - skippable: boolean
- * @param {string} currentTimeStr - Current time as a string (e.g., "12:00").
- * @returns {Array} New array of rescheduled tasks, sorted by startTime.
- */
+/* Compress Mode Rescheduling Logic */
 function applyCompressMode(tasks, currentTimeStr) {
   const clonedTasks = tasks.map((task) => ({ ...task }));
 
+  // Separate fixed and non-fixed tasks
   const fixedTasks = clonedTasks
-    .filter((task) => task.fixed)
+    .filter((task) => task.fixed && !task.completed)
     .sort(
       (a, b) => timeStrToMinutes(a.startTime) - timeStrToMinutes(b.startTime)
     );
@@ -193,16 +105,13 @@ function applyCompressMode(tasks, currentTimeStr) {
   const nonFixedTasks = clonedTasks
     .filter((task) => !task.fixed && !task.completed)
     .sort((a, b) => {
-      // tasks are not ordered by skippable priority
-      //if (a.skippable === b.skippable) {
-        return timeStrToMinutes(a.startTime) - timeStrToMinutes(b.startTime);
-      //}
-      //return a.skippable ? 1 : -1;
+      return timeStrToMinutes(a.startTime) - timeStrToMinutes(b.startTime);
     });
 
   const scheduledTasks = [];
   let pointer = timeStrToMinutes(currentTimeStr);
 
+  // Compress non-fixed tasks leftwards if possible
   for (const task of nonFixedTasks) {
     const originalStart = timeStrToMinutes(task.startTime);
     const newStart = findEarliestAvailableSlot(
@@ -220,11 +129,11 @@ function applyCompressMode(tasks, currentTimeStr) {
     }
 
     scheduledTasks.push({ ...task });
-    
   }
 
   const completedTasks = clonedTasks.filter((task) => task.completed);
 
+  // Return all tasks sorted by updated start time
   const finalTasks = [...fixedTasks, ...scheduledTasks, ...completedTasks].sort(
     (a, b) => {
       const aTime = a.startTime ? timeStrToMinutes(a.startTime) : Infinity;
@@ -236,6 +145,7 @@ function applyCompressMode(tasks, currentTimeStr) {
   return finalTasks;
 }
 
+/* Utility: Find earliest time slot to left-shift task */
 function findEarliestAvailableSlot(task, pointer, fixedTasks, scheduledTasks) {
   const allTasks = fixedTasks.concat(scheduledTasks);
   let candidateStart = pointer;

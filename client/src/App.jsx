@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+// Import necessary components and utilities
 import TaskPanel from "./components/TaskPanel";
 import AuthPrompt from "./components/AuthPrompt";
 import Timeline from "./components/Timeline";
@@ -6,6 +7,7 @@ import { fetchWithAuth } from "./utils/fetchWithAuth";
 
 
 export default function App() {
+  // App state for tasks, authentication, and rescheduling
   const [tasks, setTasks] = useState([]);
   const [hasLoadedTasks, setHasLoadedTasks] = useState(false);
   const [authMode, setAuthMode] = useState(null); // 'guest' | 'user'
@@ -14,19 +16,23 @@ export default function App() {
   const [skippedTasks, setSkippedTasks] = useState([]);
   const [showOverlay, setShowOverlay] = useState(false);
 
+  // Triggered when rescheduling is previewed
   const handlePreviewReschedule = (updated, skipped) => {
     setRescheduledTasks(updated);
     setSkippedTasks(skipped);
     setShowOverlay(true);
   };
 
+  // Apply the rescheduled task list
   const handleRescheduleConfirm = () => {
+    rescheduledTasks.forEach(task => delete task.skipped);
     setTasks(rescheduledTasks);
     setRescheduledTasks([]);
     setSkippedTasks([]);
     setShowOverlay(false);
   };
 
+  // Cancel the rescheduling preview
   const handleRescheduleCancel = () => {
     setRescheduledTasks([]);
     setSkippedTasks([]);
@@ -44,11 +50,9 @@ export default function App() {
       .catch(() => {
         console.log("No valid session, prompting login.");
       });
-      
   }, []);
 
-
-
+  // Adds a new task to state
   const handleAdd = ({
     text,
     duration,
@@ -71,13 +75,7 @@ export default function App() {
     ]);
   };
 
-  // Load data upon initialization
-  const taskToString = (task) =>
-    `[${task.startTime || "--:--"}] ${task.text} (${task.duration}m)` +
-    (task.fixed ? " [Fixed]" : "") +
-    (task.completed ? " [Done]" : "") +
-    (task.skipped ? " [Skipped]" : "");
-
+  // Load tasks from localStorage or server, depending on auth mode
   useEffect(() => {
     if (authMode === "guest") {
       const saved = localStorage.getItem("snapnshift-tasks");
@@ -100,7 +98,7 @@ export default function App() {
     }
   }, [authMode]);
 
-  // Save tasks after initialization
+  // Persist tasks to storage after they have loaded
   useEffect(() => {
     if (!hasLoadedTasks) return;
 
@@ -122,7 +120,7 @@ export default function App() {
     }
   }, [tasks, hasLoadedTasks, authMode]);
 
-  // Login/Register UI and authMode selector
+  // Prompt user to choose login/register or guest mode
   if (authMode === null) {
     return (
       <div className="p-8 space-y-4">
@@ -146,10 +144,12 @@ export default function App() {
     );
   }
 
+  // Show authentication prompt if auth attempt is underway
   if (authMode === "authAttempt") {
     return <AuthPrompt onAuthSuccess={() => setAuthMode("user")} />
   }
-  
+
+  // Main app UI: TaskPanel and Timeline side by side
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 px-4 py-8">
       {/* logout */}
@@ -172,7 +172,6 @@ export default function App() {
           tasks={tasks}
           setTasks={setTasks}
           onAdd={handleAdd}
-          taskToString={taskToString}
           onPreviewReschedule={handlePreviewReschedule}
           onRescheduleConfirm={handleRescheduleConfirm}
           onRescheduleCancel={handleRescheduleCancel}

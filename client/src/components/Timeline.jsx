@@ -22,7 +22,7 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
   return (
     <div className="relative h-[600px] overflow-y-scroll border border-gray-300">
       <div className="relative h-[1440px]">
-        {/* Render hour markers (00:00 to 23:00) */}
+        {/* Render horizontal hour markers and labels (e.g. "00:00", "01:00", ..., "23:00") */}
         {hours.map((hour) => (
           <div
             key={hour}
@@ -35,7 +35,7 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
           </div>
         ))}
 
-        {/* Render each task as a time-aligned block */}
+        {/* Render each current task (non-overlay) with clickable editor */}
         {tasks
           .filter((task) => task.startTime)
           .map((task) => {
@@ -43,7 +43,7 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
             const height = task.duration;
             return (
               <div key={task.id}>
-                {/* Task box */}
+                {/* Task display box */}
                 <div
                   className="absolute left-16 right-4 bg-blue-200 rounded p-1 text-sm shadow z-0"
                   style={{ top: `${top}px`, height: `${height}px` }}
@@ -76,7 +76,7 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
                   </div>
                 </div>
 
-                {/* Floating editor */}
+                {/* Floating editor panel for modifying task attributes */}
                 {expandedTaskId === task.id && (
                   <div
                     className="absolute left-4 right-4 z-20 bg-white border border-gray-300 rounded p-2 shadow-lg"
@@ -145,6 +145,7 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
               </div>
             );
           })}
+        {/* Overlay showing rescheduled task positions (highlighted) */}
         {showOverlay &&
           rescheduledTasks
             .filter((task) => task.startTime)
@@ -167,6 +168,7 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
                 </div>
               );
             })}
+        {/* Overlay showing skipped tasks (grayed out and struck through) */}
         {showOverlay &&
           skippedTasks
             .filter((task) => task.startTime)

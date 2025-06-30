@@ -5,12 +5,12 @@ export default function TaskPanel({
   tasks,
   setTasks,
   onAdd,
-  taskToString,
   onPreviewReschedule,
   onRescheduleConfirm,
   onRescheduleCancel,
   showOverlay
 }) {
+  // Check if any task starts in the past (with optional buffer), disallowing compression
   const hasPastIncompleteTasks = tasks.some(task => {
     if (task.completed || !task.startTime || task.duration == null) return false;
     const startTimeMinutes = timeStrToMinutes(task.startTime);
@@ -20,6 +20,7 @@ export default function TaskPanel({
     return startTimeMinutes - buffer < nowMinutes;
   });
 
+  // Render task input, import/export, and rescheduling controls
   return (
     <>
       <TaskInput onAdd={onAdd} />
@@ -33,6 +34,7 @@ export default function TaskPanel({
             Clear all
           </button>
         )}
+        {/* Export current tasks to JSON file */}
         <button
           onClick={() => {
             const blob = new Blob([JSON.stringify(tasks, null, 2)], {
@@ -48,6 +50,7 @@ export default function TaskPanel({
         >
           Export tasks
         </button>
+        {/* Import tasks from a JSON file */}
         <input
           type="file"
           accept="application/json"
@@ -75,6 +78,7 @@ export default function TaskPanel({
 
       <div className="mt-4 space-y-2 border-t pt-4">
         <h3 className="text-sm font-semibold text-gray-600">Reschedule</h3>
+        {/* Apply push mode and show a preview of rescheduled tasks */}
         <button
           onClick={() => {
             const now = new Date();
@@ -86,9 +90,6 @@ export default function TaskPanel({
               .toString()
               .padStart(2, "0")}`;
             const [updated, skippedTasks] = applyPushMode(tasks, currentTimeStr);
-            console.log(
-              "Skipped tasks:\n" + skippedTasks.map(taskToString).join("\n")
-            );
             onPreviewReschedule(updated, skippedTasks);
           }}
           className="mt-4 mb-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
@@ -102,6 +103,7 @@ export default function TaskPanel({
               : ""
           }
         >
+          {/* Apply compress mode and show a preview of rescheduled tasks */}
           <button
             onClick={() => {
               const now = new Date();
@@ -122,6 +124,7 @@ export default function TaskPanel({
             Compress Now
           </button>
         </span>
+        {/* Show confirm/cancel buttons only when overlay is active */}
         {showOverlay && (
           <div className="mt-2 flex space-x-4">
             <button
