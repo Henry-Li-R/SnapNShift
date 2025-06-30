@@ -194,6 +194,7 @@ export default function App() {
           setTasks={setTasks}
           rescheduledTasks={rescheduledTasks}
           showOverlay={showOverlay}
+          skippedTasks={skippedTasks}
         />
       </div>
     </div>

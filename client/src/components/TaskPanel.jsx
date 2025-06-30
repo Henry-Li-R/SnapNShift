@@ -86,9 +86,6 @@ export default function TaskPanel({
               .toString()
               .padStart(2, "0")}`;
             const [updated, skippedTasks] = applyPushMode(tasks, currentTimeStr);
-            alert(
-              `Push mode applied.\n${skippedTasks.length} task(s) could not be scheduled and were skipped.`
-            );
             console.log(
               "Skipped tasks:\n" + skippedTasks.map(taskToString).join("\n")
             );

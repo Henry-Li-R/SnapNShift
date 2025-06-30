@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { timeStrToMinutes } from "../utils/reschedule";
 
-export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], showOverlay = false }) {
+export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], skippedTasks = [], showOverlay = false }) {
   const [expandedTaskId, setExpandedTaskId] = useState(null);
   const [editedAttributes, setEditedAttributes] = useState({});
 
@@ -164,6 +164,23 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
                     {task.skippable && " · Skippable"}
                     {task.completed && " · Done"}
                   </div>
+                </div>
+              );
+            })}
+        {showOverlay &&
+          skippedTasks
+            .filter((task) => task.startTime)
+            .map((task) => {
+              const top = timeStrToMinutes(task.startTime);
+              const height = task.duration;
+              return (
+                <div
+                  key={`skipped-${task.id}`}
+                  className="absolute left-16 right-4 bg-gray-400 rounded p-1 text-sm shadow z-0 border border-dashed border-gray-500"
+                  style={{ top: `${top}px`, height: `${height}px`, pointerEvents: 'none' }}
+                >
+                  <div className="font-semibold line-through">{task.text}</div>
+                  <div className="text-xs text-gray-700 italic">Skipped</div>
                 </div>
               );
             })}
