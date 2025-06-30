@@ -65,7 +65,7 @@ export default function TaskInput({ onAdd }) {
           <span className="text-sm text-gray-500">min</span>
         </div>
         <input
-          className="border rounded px-3 py-2 w-28"
+          className="border rounded px-3 py-2 w-50"
           type="time"
           value={startTime}
           onChange={(e) => setStartTime(e.target.value)}

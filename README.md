@@ -58,6 +58,14 @@ SnapNShift is designed for **adaptive scheduling**: one-click rescheduling when 
 - All non-fixed, incomplete tasks are shifted earlier in the day if possible, filling available time slots before their original start time.
 
 ---
+⚙️ **Config Notes**
+- The current day end is configured as 12:00 AM (i.e., 24 * 60 minutes).
+- A default buffer of 5 minutes is enforced between tasks during rescheduling.
+These can be adjusted in `utils/rescheduleUtils.js`.
+
+**Note:** If there are incomplete tasks earlier in the day, using Compress Mode may shift later tasks d them unintentionally. To avoid this, Compress Mode is disabled temporarily at such times; use **Push Mode first** to realign all tasks starting from now, then optionally Compress.
+
+---
 
 ## 💻 Stack
 
