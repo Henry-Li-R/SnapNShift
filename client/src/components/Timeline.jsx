@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { timeStrToMinutes } from "../utils/rescheduleUtils";
+import { timeStrToMinutes } from "../utils/reschedule";
 
 export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], showOverlay = false }) {
   const [expandedTaskId, setExpandedTaskId] = useState(null);

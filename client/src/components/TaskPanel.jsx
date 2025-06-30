@@ -1,5 +1,5 @@
 import TaskInput from "./TaskInput";
-import { applyPushMode, applyCompressMode, timeStrToMinutes } from "../utils/rescheduleUtils";
+import { applyPushMode, applyCompressMode, timeStrToMinutes } from "../utils/reschedule";
 
 export default function TaskPanel({
   tasks,

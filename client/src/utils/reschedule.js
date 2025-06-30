@@ -1,4 +1,6 @@
-const DAY_END = 21 * 60; // 9:00 PM
+const DAY_END = 24 * 60; // end of day: 12 AM
+
+const BUFFER_BETWEEN_TASKS = 5; // in minutes
 
 /* Helpers */
 export function timeStrToMinutes(timeStr) {
@@ -92,11 +94,11 @@ function applyPushMode(tasks, currentTimeStr) {
 function findNextAvailableSlot(task, pointer, fixedTasks, scheduledTasks) {
   let candidateStart = Math.max(pointer, 0);
 
-  while (candidateStart + task.duration <= DAY_END) {
+  while (candidateStart + task.duration + BUFFER_BETWEEN_TASKS <= DAY_END) {
     const conflict = fixedTasks.concat(scheduledTasks).some((otherTask) => {
       const otherStart = timeStrToMinutes(otherTask.startTime);
-      const otherEnd = otherStart + otherTask.duration;
-      const candidateEnd = candidateStart + task.duration;
+      const otherEnd = otherStart + otherTask.duration + BUFFER_BETWEEN_TASKS;
+      const candidateEnd = candidateStart + task.duration + BUFFER_BETWEEN_TASKS;
       return candidateStart < otherEnd && otherStart < candidateEnd;
     });
     if (!conflict) {
@@ -236,11 +238,11 @@ function findEarliestAvailableSlot(task, pointer, fixedTasks, scheduledTasks) {
   const allTasks = fixedTasks.concat(scheduledTasks);
   let candidateStart = pointer;
 
-  while (candidateStart + task.duration <= DAY_END) {
+  while (candidateStart + task.duration + BUFFER_BETWEEN_TASKS <= DAY_END) {
     const conflict = allTasks.some((other) => {
       const otherStart = timeStrToMinutes(other.startTime);
-      const otherEnd = otherStart + other.duration;
-      const candidateEnd = candidateStart + task.duration;
+      const otherEnd = otherStart + other.duration + BUFFER_BETWEEN_TASKS;
+      const candidateEnd = candidateStart + task.duration + BUFFER_BETWEEN_TASKS;
       return candidateStart < otherEnd && otherStart < candidateEnd;
     });
 
