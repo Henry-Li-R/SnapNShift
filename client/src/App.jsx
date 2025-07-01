@@ -5,6 +5,7 @@ import AuthPrompt from "./components/AuthPrompt";
 import Timeline from "./components/Timeline";
 import { fetchWithAuth } from "./utils/fetchWithAuth";
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function App() {
   // App state for tasks, authentication, and rescheduling
@@ -41,7 +42,7 @@ export default function App() {
 
   // On load, if a valid token exists, set authMode to "user"
   useEffect(() => {
-    fetchWithAuth({ url: "http://localhost:3001/auth/verify", alertUser: false })
+    fetchWithAuth({ url: `${BASE_URL}/auth/verify`, alertUser: false })
       .then((res) => {
         if (res.ok) {
           setAuthMode("user");
@@ -86,7 +87,7 @@ export default function App() {
     }
 
     if (authMode === "user") {
-      fetchWithAuth({ url: "http://localhost:3001/user/tasks" })
+      fetchWithAuth({ url: `${BASE_URL}/user/tasks` })
         .then((res) => res.json())
         .then((data) => {
           setTasks(data);
@@ -108,7 +109,7 @@ export default function App() {
 
     if (authMode === "user") {
       fetchWithAuth({
-        url: "http://localhost:3001/user/tasks",
+        url: `${BASE_URL}/user/tasks`,
         alertUser: true,
         options: {
           method: "POST",

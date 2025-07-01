@@ -168,28 +168,3 @@ function findEarliestAvailableSlot(task, pointer, fixedTasks, scheduledTasks) {
 }
 
 export { applyPushMode, applyCompressMode };
-
-// Edge case unit test for applyPushMode
-/*
-function runTest() {
-  const tasks = [
-    // Fixed task blocking the only viable time window
-    { id: 1, text: "Fixed Task", duration: 60, startTime: "14:00", fixed: true, completed: false },
-
-    // Task that should be skipped due to no available slot
-    { id: 2, text: "Too Long Task", duration: 300, startTime: "14:30", fixed: false, completed: false },
-
-    // Already skipped task, should remain unchanged
-    { id: 3, text: "Previously Skipped", duration: 30, startTime: null, fixed: false, completed: false, skipped: true },
-
-    // Completed task, should be ignored
-    { id: 4, text: "Completed Task", duration: 45, startTime: "15:30", fixed: false, completed: true }
-  ];
-
-  const currentTimeStr = "14:30";
-  applyPushMode(tasks, currentTimeStr);
-  console.log("Updated tasks (edge cases):", tasks);
-}
-
-runTest();
-*/

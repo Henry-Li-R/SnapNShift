@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export default function AuthPrompt({ onAuthSuccess }) {
   const [showRegister, setShowRegister] = useState(false);
   const [usernameInput, setUsernameInput] = useState("");
@@ -27,7 +29,7 @@ export default function AuthPrompt({ onAuthSuccess }) {
           className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           onClick={() => {
             const endpoint = showRegister ? "/auth/register" : "/auth/login";
-            fetch(`http://localhost:3001${endpoint}`, {
+            fetch(`${BASE_URL}${endpoint}`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
