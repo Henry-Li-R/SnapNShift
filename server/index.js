@@ -8,8 +8,9 @@ const userRoutes = require('./routes/user');
 const app = express();
 app.use(cors({
     origin: "http://localhost:5173",
-    methods: ["GET", "POST", "OPTIONS"],
+    methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true
 }));
 app.use(express.json());
 app.use('/auth', authRoutes);

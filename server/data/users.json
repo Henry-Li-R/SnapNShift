@@ -1,3 +1,10 @@
 [
-  
+  {
+    "name": "henry",
+    "passwordHash": "$2b$10$EM20bUd/WGJBg7BRiUgxRO6qmKXVNRYhwjemzDcHaYhF/yn.1KOdm"
+  },
+  {
+    "name": ".",
+    "passwordHash": "$2b$10$Vizfurqkn8CSsEKHHQeA4u7tFd0Oz3mO5kZg3uxNtueCUnI0/gMpu"
+  }
 ]

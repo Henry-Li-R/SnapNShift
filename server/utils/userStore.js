@@ -12,20 +12,20 @@ function saveUsers(users) {
     fs.writeFileSync(filePath, JSON.stringify(users, null, 2));
 }
 
-function userExists(username) {
+function getUser(username) {
     const users = loadUsers();
-    return users.some(user => user.name === username);
+    return users.find(user => user.name === username);
 }
 
-function addUser(username) {
+function addUser(username, passwordHash) {
     const users = loadUsers();
-    users.push({ name: username });
+    users.push({ name: username, passwordHash });
     saveUsers(users);
 }
 
 module.exports = {
     loadUsers,
     saveUsers,
-    userExists,
-    addUser
+    addUser,
+    getUser
 };
