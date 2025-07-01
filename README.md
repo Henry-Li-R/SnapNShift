@@ -29,9 +29,11 @@ SnapNShift is designed for **adaptive scheduling**: one-click rescheduling when 
 - [ ] Mark tasks as fixed or skippable
 - [ ] Local storage only (no account required)
 
+
+- Overlay comparisons of old vs. new schedules
 ---
 
-## 🗂️ Task Schema
+## 🗂️ Sample Task Schema
 
 ```json
 {
@@ -70,8 +72,8 @@ These can be adjusted in `utils/rescheduleUtils.js`.
 ## 💻 Stack
 
 - **Frontend**: React + Tailwind CSS
-- **State**: useState / useEffect (or Zustand later)
-- **Persistence**: LocalStorage only (MVP)
+- **Backend**: Express
+- **Persistence**: LocalStorage (guest) and file-based server persistence (user)
 
 ---
 
@@ -103,37 +105,15 @@ npm run dev
 ---
 
 ## 🛣️ Next Steps
-🧱 Foundation First
+ 
+	1. Support multi-day scheduling (e.g., rollover skipped tasks across days)
 
-	1.	Deploy to web so others can try it (e.g., Vercel, Netlify)
- 
-	2.	Add backend with basic auth and schedule storage
- 
-	3.	Allow users to save/load their schedules
- 
-	4.	Prepare for future features like settings, analytics, and cross-device sync (e.g., data models, endpoints)
- 
-	5.	(Optional) Integrate with external calendars (e.g., Google Calendar API)
+	2. Settings
+	
+	3. Analytics
 
-⸻
-
-🔧 Product Features (Dependent on backend)
-
-	1.	Undo actions like Clear, Delete, Push, and Compress
+	4. (Optional) Integrate with external calendars (e.g., Google Calendar API)
  
-	2.	User settings (e.g., buffer time, day start/end time)
- 
-	3.	Support multi-day scheduling (e.g., rollover skipped tasks across days)
- 
-	4.	Overlay or side-by-side comparisons of old vs. new schedules
-
-⸻
-
-🎨 UI Enhancements
-
-	1.	Timeline → time-grid layout (visually align task blocks by time)
- 
-	2.	Improve mobile responsiveness and UX for task editing & timeline interaction
 
 ⸻
 
