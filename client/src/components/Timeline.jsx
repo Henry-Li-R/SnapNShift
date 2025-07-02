@@ -1,5 +1,22 @@
-import { useState, useEffect } from "react";
-import { timeStrToMinutes } from "../utils/reschedule";
+import { useState, useEffect, useRef } from "react";
+import { timeStrToMinutes, minutesToTimeStr } from "../utils/reschedule";
+
+// Throttle interval for limiting drag event updates (in ms)
+const THROTTLE_INTERVAL_MS = 50;
+// Task drag snap interval (in minutes)
+const DRAG_INTERVAL_MINUTES = 15;
+
+// Returns a throttled version of the input function, only allowing execution every 'limit' ms
+const throttle = (fn, limit) => {
+  let lastCall = 0;
+  return (...args) => {
+    const now = Date.now();
+    if (now - lastCall >= limit) {
+      lastCall = now;
+      fn(...args);
+    }
+  };
+};
 
 export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], skippedTasks = [], showOverlay = false }) {
   const [expandedTaskId, setExpandedTaskId] = useState(null);
@@ -7,18 +24,13 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
 
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000); // update every minute
-    return () => clearInterval(intervalId);
-  }, []);
+  const containerRef = useRef(null);
+  const timelineRef = useRef(null);
+  const [draggingTaskId, setDraggingTaskId] = useState(null);
 
-  const currentMinutes =
-    currentTime.getHours() * 60 + currentTime.getMinutes();
-
-  const hours = Array.from({ length: 24 }, (_, i) => i);
-
+  const handleMouseDown = (taskId) => {
+    setDraggingTaskId(taskId);
+  };
 
   const handleAttributeChange = (id, key, value) => {
     setEditedAttributes((prev) => ({
@@ -30,10 +42,65 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
     }));
   };
 
+  // Throttled mouse move handler to update task position during drag
+  const throttledMouseMove = throttle((e) => {
+    console.log("Throttled mouse move");
+    if (!draggingTaskId) return;
+
+    const task = tasks.find((t) => t.id === draggingTaskId);
+    if (!task) return;
+
+    const timelineTop = timelineRef.current.getBoundingClientRect().top;
+    const cursorY = e.clientY;
+    const rawOffset = cursorY - timelineTop + containerRef.current.scrollTop;
+    const rawMinutes = Math.round(rawOffset);
+    const snappedMinutes = Math.round(rawMinutes / DRAG_INTERVAL_MINUTES) * DRAG_INTERVAL_MINUTES;
+    const clampedMinutes = Math.max(0, Math.min(1440 - task.duration, snappedMinutes));
+
+    const newStartTime = minutesToTimeStr(clampedMinutes);
+    setTasks((prev) =>
+      prev.map((t) =>
+        t.id === task.id ? { ...t, startTime: newStartTime } : t
+      )
+    );
+  }, THROTTLE_INTERVAL_MS);
+
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // update every minute
+    return () => clearInterval(intervalId);
+  }, []);
+
+  useEffect(() => {
+    // Attach global mousemove/mouseup listeners using throttled handler to limit updates
+    const handleMouseMove = (e) => throttledMouseMove(e);
+    const handleMouseUp = () => setDraggingTaskId(null);
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [draggingTaskId]);
+
+  const currentMinutes =
+    currentTime.getHours() * 60 + currentTime.getMinutes();
+
+  const hours = Array.from({ length: 24 }, (_, i) => i);
+
+
   // Timeline scrollable container (1px = 1 minute)
   return (
-    <div className="relative h-[600px] overflow-y-scroll border border-gray-300">
-      <div className="relative h-[1440px]">
+    <div
+      className="relative h-[600px] overflow-y-scroll border border-gray-300"
+      ref={containerRef}
+    >
+      <div className="relative h-[1440px]" ref={timelineRef}>
         {/* Render horizontal hour markers and labels (e.g. "00:00", "01:00", ..., "23:00") */}
         {hours.map((hour) => (
           <div
@@ -59,6 +126,7 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
                 <div
                   className="absolute left-16 right-4 bg-blue-200 rounded p-1 text-sm shadow z-0"
                   style={{ top: `${top}px`, height: `${height}px` }}
+                  onMouseDown={() => handleMouseDown(task.id)}
                 >
                   <div
                     className="cursor-pointer"
@@ -207,4 +275,6 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
       </div>
     </div>
   );
+
+
 }
