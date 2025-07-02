@@ -1,9 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { timeStrToMinutes } from "../utils/reschedule";
 
 export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], skippedTasks = [], showOverlay = false }) {
   const [expandedTaskId, setExpandedTaskId] = useState(null);
   const [editedAttributes, setEditedAttributes] = useState({});
+
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // update every minute
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const currentMinutes =
+    currentTime.getHours() * 60 + currentTime.getMinutes();
 
   const hours = Array.from({ length: 24 }, (_, i) => i);
 
@@ -186,6 +198,12 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
                 </div>
               );
             })}
+        {/* Current time indicator */}
+        <div
+          className="absolute left-0 w-full border-t-2 border-red-500 z-30"
+          style={{ top: `${currentMinutes}px` }}
+        >
+        </div>
       </div>
     </div>
   );
