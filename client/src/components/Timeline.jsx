@@ -50,9 +50,9 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
     const task = tasks.find((t) => t.id === draggingTaskId);
     if (!task) return;
 
-    const timelineTop = timelineRef.current.getBoundingClientRect().top;
+    const containerTop = containerRef.current.getBoundingClientRect().top;
     const cursorY = e.clientY;
-    const rawOffset = cursorY - timelineTop + containerRef.current.scrollTop;
+    const rawOffset = cursorY - containerTop + containerRef.current.scrollTop;
     const rawMinutes = Math.round(rawOffset);
     const snappedMinutes = Math.round(rawMinutes / DRAG_INTERVAL_MINUTES) * DRAG_INTERVAL_MINUTES;
     const clampedMinutes = Math.max(0, Math.min(1440 - task.duration, snappedMinutes));
@@ -74,6 +74,8 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
   }, []);
 
   useEffect(() => {
+    // Disable text selection when dragging
+    if (draggingTaskId) document.body.style.userSelect = "none";
     // Attach global mousemove/mouseup listeners using throttled handler to limit updates
     const handleMouseMove = (e) => throttledMouseMove(e);
     const handleMouseUp = () => setDraggingTaskId(null);
@@ -84,8 +86,10 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
+      // Re-enable text selection after drag
+      document.body.style.userSelect = "auto";
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draggingTaskId]);
 
   const currentMinutes =
