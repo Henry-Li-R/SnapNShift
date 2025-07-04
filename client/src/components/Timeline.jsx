@@ -26,10 +26,13 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
 
   const containerRef = useRef(null);
   const timelineRef = useRef(null);
-  const [draggingTaskId, setDraggingTaskId] = useState(null);
+  const [draggedTaskState, setDraggedTaskState] = useState(null);
 
   const handleMouseDown = (taskId) => {
-    setDraggingTaskId(taskId);
+    const task = tasks.find((t) => t.id === taskId);
+    if (task) {
+      setDraggedTaskState({ id: taskId, newStartTime: task.startTime });
+    }
   };
 
   const handleAttributeChange = (id, key, value) => {
@@ -45,9 +48,9 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
   // Throttled mouse move handler to update task position during drag
   const throttledMouseMove = throttle((e) => {
     console.log("Throttled mouse move");
-    if (!draggingTaskId) return;
+    if (!draggedTaskState?.id) return;
 
-    const task = tasks.find((t) => t.id === draggingTaskId);
+    const task = tasks.find((t) => t.id === draggedTaskState.id);
     if (!task) return;
 
     const containerTop = containerRef.current.getBoundingClientRect().top;
@@ -58,11 +61,7 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
     const clampedMinutes = Math.max(0, Math.min(1440 - task.duration, snappedMinutes));
 
     const newStartTime = minutesToTimeStr(clampedMinutes);
-    setTasks((prev) =>
-      prev.map((t) =>
-        t.id === task.id ? { ...t, startTime: newStartTime } : t
-      )
-    );
+    setDraggedTaskState({ id: task.id, newStartTime });
   }, THROTTLE_INTERVAL_MS);
 
 
@@ -75,10 +74,21 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
 
   useEffect(() => {
     // Disable text selection when dragging
-    if (draggingTaskId) document.body.style.userSelect = "none";
+    if (draggedTaskState?.id) document.body.style.userSelect = "none";
     // Attach global mousemove/mouseup listeners using throttled handler to limit updates
     const handleMouseMove = (e) => throttledMouseMove(e);
-    const handleMouseUp = () => setDraggingTaskId(null);
+    const handleMouseUp = () => {
+      if (draggedTaskState) {
+        setTasks((prev) =>
+          prev.map((t) =>
+            t.id === draggedTaskState.id
+              ? { ...t, startTime: draggedTaskState.newStartTime }
+              : t
+          )
+        );
+      }
+      setDraggedTaskState(null);
+    };
 
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
@@ -90,7 +100,17 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
       document.body.style.userSelect = "auto";
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [draggingTaskId]);
+  }, [draggedTaskState]);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setDraggedTaskState(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const currentMinutes =
     currentTime.getHours() * 60 + currentTime.getMinutes();
@@ -122,14 +142,21 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
         {tasks
           .filter((task) => task.startTime)
           .map((task) => {
-            const top = timeStrToMinutes(task.startTime);
+            const isCloned = draggedTaskState?.id === task.id;
+            const top = isCloned
+              ? timeStrToMinutes(draggedTaskState.newStartTime)
+              : timeStrToMinutes(task.startTime);
             const height = task.duration;
             return (
               <div key={task.id}>
                 {/* Task display box */}
                 <div
                   className="absolute left-16 right-4 bg-blue-200 rounded p-1 text-sm shadow z-0"
-                  style={{ top: `${top}px`, height: `${height}px` }}
+                  style={{
+                    top: `${top}px`,
+                    height: `${height}px`,
+                    opacity: isCloned ? 0.5 : 1,
+                  }}
                   onMouseDown={() => handleMouseDown(task.id)}
                 >
                   <div
