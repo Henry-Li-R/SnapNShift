@@ -28,6 +28,9 @@ export default function Timeline({
   const [expandedTaskId, setExpandedTaskId] = useState(null);
   const [editedAttributes, setEditedAttributes] = useState({});
 
+  // Track which task is currently hovered
+  const [hoveredTaskId, setHoveredTaskId] = useState(null);
+
   const [currentTime, setCurrentTime] = useState(new Date());
 
   const containerRef = useRef(null);
@@ -250,9 +253,16 @@ export default function Timeline({
                   style={{
                     top: `${top}px`,
                     height: `${height}px`,
-                    opacity: (isDragCloned || isResizeCloned) ? 0.5 : 1,
+                    opacity:
+                      isDragCloned || isResizeCloned
+                        ? 0.5
+                        : hoveredTaskId === task.id
+                        ? 0.85
+                        : 1,
                   }}
                   onMouseDown={(e) => handleDragMouseDown(task.id, e)}
+                  onMouseEnter={() => setHoveredTaskId(task.id)}
+                  onMouseLeave={() => setHoveredTaskId(null)}
                 >
                   <div
                     className="cursor-pointer"
@@ -280,13 +290,22 @@ export default function Timeline({
                       {task.completed && " · Done"}
                     </div>
                   </div>
-                  <div
-                    className="absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize"
-                    onMouseDown={(e) => {
-                      e.stopPropagation();
-                      handleResizeMouseDown(task.id);
-                    }}
-                  />
+                  {/* Show resize/drag handle only on hover or if resizing */}
+                  {(hoveredTaskId === task.id || isResizeCloned) && (
+                    <div
+                      className="absolute bottom-0 left-1/2 transform -translate-x-1/2 h-2 w-6 cursor-ns-resize"
+                      style={{
+                        backgroundImage: "linear-gradient(to bottom, #4B5563 50%, transparent 50%)",
+                        backgroundSize: "100% 2px",
+                        backgroundRepeat: "repeat-y",
+                        opacity: 0.6,
+                      }}
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                        handleResizeMouseDown(task.id);
+                      }}
+                    />
+                  )}
                 </div>
 
                 {/* Floating editor panel for modifying task attributes */}
