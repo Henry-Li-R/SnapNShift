@@ -133,7 +133,11 @@ export default function Timeline({
 
     const containerTop = containerRef.current.getBoundingClientRect().top;
     const cursorY = e.clientY;
-    const rawOffset = cursorY - containerTop + containerRef.current.scrollTop;
+    const rawOffset =
+      cursorY -
+      containerTop +
+      containerRef.current.scrollTop -
+      (draggedTaskState.offsetY || 0);
     const rawMinutes = Math.round(rawOffset);
     const snappedMinutes =
       Math.round(rawMinutes / INTERVAL_MINUTES) * INTERVAL_MINUTES;
@@ -143,13 +147,22 @@ export default function Timeline({
     );
 
     const newStartTime = minutesToTimeStr(clampedMinutes);
-    setDraggedTaskState({ id: task.id, newStartTime });
+    setDraggedTaskState({ ...draggedTaskState, newStartTime });
   }, THROTTLE_INTERVAL_MS);
-  // Mouse down handler
-  const handleDragMouseDown = (taskId) => {
+  // Mouse down handler (store the vertical click offset within the task box)
+  const handleDragMouseDown = (taskId, e) => {
     const task = tasks.find((t) => t.id === taskId);
     if (task) {
-      setDraggedTaskState({ id: taskId, newStartTime: task.startTime });
+      const taskTop = timeStrToMinutes(task.startTime);
+      const containerTop = containerRef.current.getBoundingClientRect().top;
+      const clickY = e.clientY;
+      const offsetY =
+        clickY - containerTop - taskTop + containerRef.current.scrollTop;
+      setDraggedTaskState({
+        id: taskId,
+        newStartTime: task.startTime,
+        offsetY,
+      });
     }
   };
   // Attach mouse liseners
@@ -239,7 +252,7 @@ export default function Timeline({
                     height: `${height}px`,
                     opacity: (isDragCloned || isResizeCloned) ? 0.5 : 1,
                   }}
-                  onMouseDown={() => handleDragMouseDown(task.id)}
+                  onMouseDown={(e) => handleDragMouseDown(task.id, e)}
                 >
                   <div
                     className="cursor-pointer"
