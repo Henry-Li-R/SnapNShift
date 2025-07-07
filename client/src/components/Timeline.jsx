@@ -4,7 +4,7 @@ import { timeStrToMinutes, minutesToTimeStr } from "../utils/reschedule";
 // Throttle interval for limiting drag event updates (in ms)
 const THROTTLE_INTERVAL_MS = 50;
 // Task drag snap interval (in minutes)
-const DRAG_INTERVAL_MINUTES = 15;
+const INTERVAL_MINUTES = 15;
 
 // Returns a throttled version of the input function, only allowing execution every 'limit' ms
 const throttle = (fn, limit) => {
@@ -18,22 +18,21 @@ const throttle = (fn, limit) => {
   };
 };
 
-export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], skippedTasks = [], showOverlay = false }) {
+export default function Timeline({
+  tasks = [],
+  setTasks,
+  rescheduledTasks = [],
+  skippedTasks = [],
+  showOverlay = false,
+}) {
   const [expandedTaskId, setExpandedTaskId] = useState(null);
   const [editedAttributes, setEditedAttributes] = useState({});
 
   const [currentTime, setCurrentTime] = useState(new Date());
 
   const containerRef = useRef(null);
-  const timelineRef = useRef(null);
   const [draggedTaskState, setDraggedTaskState] = useState(null);
-
-  const handleMouseDown = (taskId) => {
-    const task = tasks.find((t) => t.id === taskId);
-    if (task) {
-      setDraggedTaskState({ id: taskId, newStartTime: task.startTime });
-    }
-  };
+  const [resizingTaskState, setResizingTaskState] = useState(null);
 
   const handleAttributeChange = (id, key, value) => {
     setEditedAttributes((prev) => ({
@@ -45,9 +44,88 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
     }));
   };
 
+  // Update time every minute
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // update every minute
+    return () => clearInterval(intervalId);
+  }, []);
+
+  /* Task resizing (i.e. change duration) */
+  // Throttled mouse move
+  const throttledResizeMouseMove = throttle((e) => {
+    if (!resizingTaskState?.id) return;
+
+    const task = tasks.find((t) => t.id === resizingTaskState.id);
+    if (!task) return;
+
+    const containerTop = containerRef.current.getBoundingClientRect().top;
+    const cursorY = e.clientY;
+    const rawOffset = cursorY - containerTop + containerRef.current.scrollTop;
+    const startMinutes = timeStrToMinutes(task.startTime);
+    let newDuration = rawOffset - startMinutes;
+    
+    newDuration =
+      Math.round(newDuration / INTERVAL_MINUTES) * INTERVAL_MINUTES;
+    newDuration = Math.max(INTERVAL_MINUTES, newDuration);
+    newDuration = Math.min(1440 - startMinutes, newDuration);
+    setResizingTaskState({ id: task.id, newDuration });
+  }, THROTTLE_INTERVAL_MS);
+  // Attach mouse listeners
+  useEffect(() => {
+    // Disable text selection when resizing
+    if (resizingTaskState?.id) {
+      document.body.style.userSelect = "none";
+    }
+    // Attach global mousemove/mouseup listeners using throttled handler to limit updates
+    const handleMouseMove = (e) => throttledResizeMouseMove(e);
+    const handleMouseUp = () => {
+      if (resizingTaskState) {
+        setTasks((prev) =>
+          prev.map((t) =>
+            t.id === resizingTaskState.id
+              ? { ...t, duration: resizingTaskState.newDuration }
+              : t
+          )
+        );
+      }
+      setResizingTaskState(null);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      // Re-enable text selection after resize
+      document.body.style.userSelect = "auto";
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resizingTaskState]);
+  // Mouse down handler
+  const handleResizeMouseDown = (taskId) => {
+    const task = tasks.find((t) => t.id === taskId);
+    if (task) {
+      setResizingTaskState({ id: taskId, newDuration: task.duration });
+    }
+  };
+  // Abort task resizing
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setResizingTaskState(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+
+  /* Task dragging (i.e. change startTime) */
   // Throttled mouse move handler to update task position during drag
-  const throttledMouseMove = throttle((e) => {
-    console.log("Throttled mouse move");
+  const throttledDragMouseMove = throttle((e) => {
     if (!draggedTaskState?.id) return;
 
     const task = tasks.find((t) => t.id === draggedTaskState.id);
@@ -57,26 +135,31 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
     const cursorY = e.clientY;
     const rawOffset = cursorY - containerTop + containerRef.current.scrollTop;
     const rawMinutes = Math.round(rawOffset);
-    const snappedMinutes = Math.round(rawMinutes / DRAG_INTERVAL_MINUTES) * DRAG_INTERVAL_MINUTES;
-    const clampedMinutes = Math.max(0, Math.min(1440 - task.duration, snappedMinutes));
+    const snappedMinutes =
+      Math.round(rawMinutes / INTERVAL_MINUTES) * INTERVAL_MINUTES;
+    const clampedMinutes = Math.max(
+      0,
+      Math.min(1440 - task.duration, snappedMinutes)
+    );
 
     const newStartTime = minutesToTimeStr(clampedMinutes);
     setDraggedTaskState({ id: task.id, newStartTime });
   }, THROTTLE_INTERVAL_MS);
-
-
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000); // update every minute
-    return () => clearInterval(intervalId);
-  }, []);
-
+  // Mouse down handler
+  const handleDragMouseDown = (taskId) => {
+    const task = tasks.find((t) => t.id === taskId);
+    if (task) {
+      setDraggedTaskState({ id: taskId, newStartTime: task.startTime });
+    }
+  };
+  // Attach mouse liseners
   useEffect(() => {
     // Disable text selection when dragging
-    if (draggedTaskState?.id) document.body.style.userSelect = "none";
+    if (draggedTaskState?.id) {
+      document.body.style.userSelect = "none";
+    }
     // Attach global mousemove/mouseup listeners using throttled handler to limit updates
-    const handleMouseMove = (e) => throttledMouseMove(e);
+    const handleMouseMove = (e) => throttledDragMouseMove(e);
     const handleMouseUp = () => {
       if (draggedTaskState) {
         setTasks((prev) =>
@@ -101,7 +184,7 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [draggedTaskState]);
-
+  // Abort dragging
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {
@@ -112,19 +195,15 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const currentMinutes =
-    currentTime.getHours() * 60 + currentTime.getMinutes();
-
+  /* Timeline scrollable container (1px = 1 minute) */
+  const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
   const hours = Array.from({ length: 24 }, (_, i) => i);
-
-
-  // Timeline scrollable container (1px = 1 minute)
   return (
     <div
       className="relative h-[600px] overflow-y-scroll border border-gray-300"
       ref={containerRef}
     >
-      <div className="relative h-[1440px]" ref={timelineRef}>
+      <div className="relative h-[1440px]">
         {/* Render horizontal hour markers and labels (e.g. "00:00", "01:00", ..., "23:00") */}
         {hours.map((hour) => (
           <div
@@ -142,11 +221,14 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
         {tasks
           .filter((task) => task.startTime)
           .map((task) => {
-            const isCloned = draggedTaskState?.id === task.id;
-            const top = isCloned
+            const isResizeCloned = resizingTaskState?.id === task.id;
+            const isDragCloned = draggedTaskState?.id === task.id;
+            const top = isDragCloned
               ? timeStrToMinutes(draggedTaskState.newStartTime)
               : timeStrToMinutes(task.startTime);
-            const height = task.duration;
+            const height = isResizeCloned
+              ? resizingTaskState.newDuration
+              : task.duration;
             return (
               <div key={task.id}>
                 {/* Task display box */}
@@ -155,9 +237,9 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
                   style={{
                     top: `${top}px`,
                     height: `${height}px`,
-                    opacity: isCloned ? 0.5 : 1,
+                    opacity: (isDragCloned || isResizeCloned) ? 0.5 : 1,
                   }}
-                  onMouseDown={() => handleMouseDown(task.id)}
+                  onMouseDown={() => handleDragMouseDown(task.id)}
                 >
                   <div
                     className="cursor-pointer"
@@ -185,6 +267,13 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
                       {task.completed && " · Done"}
                     </div>
                   </div>
+                  <div
+                    className="absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize"
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      handleResizeMouseDown(task.id);
+                    }}
+                  />
                 </div>
 
                 {/* Floating editor panel for modifying task attributes */}
@@ -210,7 +299,11 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
                               editedAttributes[task.id]?.[key] ?? task[key]
                             }
                             onChange={(e) =>
-                              handleAttributeChange(task.id, key, e.target.checked)
+                              handleAttributeChange(
+                                task.id,
+                                key,
+                                e.target.checked
+                              )
                             }
                           />
                           {" " + key.charAt(0).toUpperCase() + key.slice(1)}
@@ -267,7 +360,11 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
                 <div
                   key={`rescheduled-${task.id}`}
                   className="absolute left-16 right-4 bg-yellow-300 bg-opacity-80 rounded p-1 text-sm shadow z-10 border border-yellow-600"
-                  style={{ top: `${top}px`, height: `${height}px`, pointerEvents: 'none' }}
+                  style={{
+                    top: `${top}px`,
+                    height: `${height}px`,
+                    pointerEvents: "none",
+                  }}
                 >
                   <div className="font-semibold">{task.text}</div>
                   <div className="text-xs text-gray-700">
@@ -290,7 +387,11 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
                 <div
                   key={`skipped-${task.id}`}
                   className="absolute left-16 right-4 bg-gray-400 rounded p-1 text-sm shadow z-0 border border-dashed border-gray-500"
-                  style={{ top: `${top}px`, height: `${height}px`, pointerEvents: 'none' }}
+                  style={{
+                    top: `${top}px`,
+                    height: `${height}px`,
+                    pointerEvents: "none",
+                  }}
                 >
                   <div className="font-semibold line-through">{task.text}</div>
                   <div className="text-xs text-gray-700 italic">Skipped</div>
@@ -301,11 +402,8 @@ export default function Timeline({ tasks = [], setTasks, rescheduledTasks = [], 
         <div
           className="absolute left-0 w-full border-t-2 border-red-500 z-30"
           style={{ top: `${currentMinutes}px` }}
-        >
-        </div>
+        ></div>
       </div>
     </div>
   );
-
-
 }
