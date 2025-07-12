@@ -4,7 +4,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AuthPrompt({ onAuthSuccess }) {
   const [showRegister, setShowRegister] = useState(false);
-  const [usernameInput, setUsernameInput] = useState("");
+  const [emailInput, setEmailInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
 
   return (
@@ -13,10 +13,10 @@ export default function AuthPrompt({ onAuthSuccess }) {
       <div className="space-y-4">
         <input
           type="text"
-          placeholder="Enter username"
+          placeholder="Enter email"
           className="border px-3 py-2 rounded w-full"
-          value={usernameInput}
-          onChange={(e) => setUsernameInput(e.target.value)}
+          value={emailInput}
+          onChange={(e) => setEmailInput(e.target.value)}
         />
         <input
           type="password"
@@ -36,7 +36,7 @@ export default function AuthPrompt({ onAuthSuccess }) {
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                username: usernameInput,
+                email: emailInput,
                 password: passwordInput,
               }),
             })
@@ -48,7 +48,8 @@ export default function AuthPrompt({ onAuthSuccess }) {
                 } else {
                   alert(data.message || "Authentication failed");
                 }
-              });
+              })
+              .catch(console.error);
           }}
         >
           {showRegister ? "Register" : "Login"}
