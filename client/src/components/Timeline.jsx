@@ -27,15 +27,14 @@ export default function Timeline({
 }) {
   const [expandedTaskId, setExpandedTaskId] = useState(null);
   const [editedAttributes, setEditedAttributes] = useState({});
-
-  // Track which task is currently hovered
   const [hoveredTaskId, setHoveredTaskId] = useState(null);
-
-  const [currentTime, setCurrentTime] = useState(new Date());
-
-  const containerRef = useRef(null);
   const [draggedTaskState, setDraggedTaskState] = useState(null);
   const [resizingTaskState, setResizingTaskState] = useState(null);
+
+  const wasDraggingOrResizingRef = useRef(false); // Track if user was recently dragging or resizing (to suppress click)
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const containerRef = useRef(null);
+  
 
   const handleAttributeChange = (id, key, value) => {
     setEditedAttributes((prev) => ({
@@ -85,13 +84,18 @@ export default function Timeline({
     const handleMouseMove = (e) => throttledResizeMouseMove(e);
     const handleMouseUp = () => {
       if (resizingTaskState) {
-        setTasks((prev) =>
-          prev.map((t) =>
-            t.id === resizingTaskState.id
-              ? { ...t, duration: resizingTaskState.newDuration }
-              : t
-          )
-        );
+        const currentTask = tasks.find((t) => t.id === resizingTaskState.id);
+        if (currentTask && currentTask.duration !== resizingTaskState.newDuration) {
+          setTasks((prev) =>
+            prev.map((t) =>
+              t.id === resizingTaskState.id
+                ? { ...t, duration: resizingTaskState.newDuration }
+                : t
+            )
+          );
+          // Set flag: just finished resizing
+          wasDraggingOrResizingRef.current = true;
+        }
       }
       setResizingTaskState(null);
     };
@@ -178,13 +182,18 @@ export default function Timeline({
     const handleMouseMove = (e) => throttledDragMouseMove(e);
     const handleMouseUp = () => {
       if (draggedTaskState) {
-        setTasks((prev) =>
-          prev.map((t) =>
-            t.id === draggedTaskState.id
-              ? { ...t, startTime: draggedTaskState.newStartTime }
-              : t
-          )
-        );
+        const currentTask = tasks.find((t) => t.id === draggedTaskState.id);
+        if (currentTask && currentTask.startTime !== draggedTaskState.newStartTime) {
+          setTasks((prev) =>
+            prev.map((t) =>
+              t.id === draggedTaskState.id
+                ? { ...t, startTime: draggedTaskState.newStartTime }
+                : t
+            )
+          );
+          // Set flag: just finished dragging
+          wasDraggingOrResizingRef.current = true;
+        }
       }
       setDraggedTaskState(null);
     };
@@ -210,6 +219,16 @@ export default function Timeline({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  // Reset the drag/resize flag after a short delay
+  useEffect(() => {
+    if (wasDraggingOrResizingRef.current) {
+      const timeout = setTimeout(() => {
+        wasDraggingOrResizingRef.current = false;
+      }, 100);
+      return () => clearTimeout(timeout);
+    }
+  }, [draggedTaskState, resizingTaskState]);
 
   /* Timeline scrollable container (1px = 1 minute) */
   const currentMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
@@ -263,25 +282,26 @@ export default function Timeline({
                   onMouseDown={(e) => handleDragMouseDown(task.id, e)}
                   onMouseEnter={() => setHoveredTaskId(task.id)}
                   onMouseLeave={() => setHoveredTaskId(null)}
+                  onClick={() => {
+                    if (wasDraggingOrResizingRef.current) {
+                      return;
+                    }
+                    if (expandedTaskId !== task.id) {
+                      setEditedAttributes({
+                        [task.id]: {
+                          text: task.text,
+                          fixed: task.fixed,
+                          skippable: task.skippable,
+                          completed: task.completed,
+                        },
+                      });
+                      setExpandedTaskId(task.id);
+                    } else {
+                      setExpandedTaskId(null);
+                    }
+                  }}
                 >
-                  <div
-                    className="cursor-pointer"
-                    onClick={() => {
-                      if (expandedTaskId !== task.id) {
-                        setEditedAttributes({
-                          [task.id]: {
-                            text: task.text,
-                            fixed: task.fixed,
-                            skippable: task.skippable,
-                            completed: task.completed,
-                          },
-                        });
-                        setExpandedTaskId(task.id);
-                      } else {
-                        setExpandedTaskId(null);
-                      }
-                    }}
-                  >
+                  <div className="cursor-pointer">
                     <div className="font-semibold">{task.text}</div>
                     <div className="text-xs text-gray-600">
                       {task.duration} min
