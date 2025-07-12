@@ -17,6 +17,9 @@ router.post('/register', async (req, res) => {
     const password = req.body.password;
 
     if (!username || !password) {
+        // for testing
+        return res.status(400).json({ message: process.env.JWT_SECRET });
+        //
         return res.status(400).json({ message: 'Username and password required' });
     }
 
