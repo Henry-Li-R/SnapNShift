@@ -1,3 +1,6 @@
+// Deprecated
+// Database has replaced local disk storage 
+
 const fs = require('fs');
 const path = require('path');
 

@@ -6,10 +6,6 @@ export default function TaskInput({ onAdd }) {
   const DEFAULT_FIXED = false;
   const DEFAULT_SKIPPABLE = false;
 
-  /*
-  the task attributes below exhibit some dependencies
-  between each other
-  */
   const [text, setText] = useState("");
   const [duration, setDuration] = useState(DEFAULT_DURATION);
   const [startTime, setStartTime] = useState(DEFAULT_START_TIME);

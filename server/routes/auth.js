@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const { addUser, getUser } = require('../utils/userStore');
 const authenticateToken = require('../middleware/auth');
+const prisma = require('../prisma');
 require('dotenv').config();
 
 const router = express.Router();
@@ -13,19 +14,17 @@ router.get('/verify', authenticateToken, (req, res) => {
 });
 
 router.post('/register', async (req, res) => {
-    const username = req.body.username?.trim();
+    const email = req.body.email?.trim();
     const password = req.body.password;
 
-    if (!username || !password) {
+    if (!email || !password) {
         return res.status(400).json({ message: 'Username and password required' });
     }
 
-    const isValidUsername = /^[a-zA-Z0-9_-]{3,20}$/.test(username);
-    if (!isValidUsername) {
-        return res.status(400).json({ message: 'Invalid username format' });
-    }
+    // email validation?
 
-    if (getUser(username)) {
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
         return res.status(409).json({ message: 'User already exists' });
     }
 
@@ -35,9 +34,14 @@ router.post('/register', async (req, res) => {
 
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    addUser(username, hashedPassword);
+    await prisma.user.create({
+        data: {
+            email,
+            password: hashedPassword,
+        }
+    });
 
-    const user = { name: username };
+    const user = { email };
     const token = jwt.sign(user, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRES_IN || '1h'
     });
@@ -46,30 +50,27 @@ router.post('/register', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-    const username = req.body.username?.trim();
+    const email = req.body.email?.trim();
     const password = req.body.password;
 
-    if (!username || !password) {
+    if (!email || !password) {
         return res.status(400).json({ message: 'Username and password required' });
     }
 
-    const isValidUsername = /^[a-zA-Z0-9_-]{3,20}$/.test(username);
-    if (!isValidUsername) {
-        return res.status(400).json({ message: 'Invalid username format.\nAccepted format: 3–20 characters, only letters, numbers, underscores, or dashes.' });
-    }
+    // email validation?
 
-    const storedUser = getUser(username);
+    const storedUser = await prisma.user.findUnique({ where: { email } });
     if (!storedUser) {
         return res.status(404).json({ message: 'User not found' });
     }
 
-    const match = await bcrypt.compare(password, storedUser.passwordHash);
+    const match = await bcrypt.compare(password, storedUser.password);
     if (!match) {
         return res.status(401).json({ message: 'Invalid credentials' });
     }
 
 
-    const user = { name: username };
+    const user = { email };
     const token = jwt.sign(user, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRES_IN || '1h'
     });

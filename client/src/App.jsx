@@ -4,6 +4,7 @@ import TaskPanel from "./components/TaskPanel";
 import AuthPrompt from "./components/AuthPrompt";
 import Timeline from "./components/Timeline";
 import { fetchWithAuth } from "./utils/fetchWithAuth";
+import { v4 as uuid } from 'uuid';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -65,7 +66,7 @@ export default function App() {
     setTasks((prev) => [
       ...prev,
       {
-        id: Date.now(),
+        id: uuid(),
         text,
         duration,
         startTime,

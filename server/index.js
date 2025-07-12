@@ -14,14 +14,10 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-//app.options("*", cors(corsOptions));
-
 app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
-app.get('/public', (req, res) => {
-    res.send('Anyone can access this.');
-});
+
 
 // Protected route example usage
 /*
