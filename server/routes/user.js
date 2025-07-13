@@ -44,7 +44,6 @@ router.post("/tasks", authenticateToken, async (req, res) => {
   try {
     // Delete all previous tasks of the user
     await prisma.task.deleteMany({ where: { userId: req.user.id } });
-
     // Create new tasks
     const newTasks = await Promise.all(
       tasks.map((task) =>

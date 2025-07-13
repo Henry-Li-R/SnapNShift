@@ -34,14 +34,14 @@ router.post('/register', async (req, res) => {
 
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    await prisma.user.create({
+    const newUser = await prisma.user.create({
         data: {
             email,
             password: hashedPassword,
         }
     });
 
-    const user = { email };
+    const user = { id: newUser.id, email };
     const token = jwt.sign(user, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRES_IN || '1h'
     });
@@ -70,7 +70,7 @@ router.post('/login', async (req, res) => {
     }
 
 
-    const user = { email };
+    const user = { id: storedUser.id, email };
     const token = jwt.sign(user, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRES_IN || '1h'
     });
