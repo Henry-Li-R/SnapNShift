@@ -20,30 +20,26 @@ SnapNShift is designed for **adaptive scheduling**: one-click rescheduling when 
 
 ---
 
-## 🔧 Features (MVP)
+## 🔧 Features
 
-- [ ] Create tasks with duration (e.g., 45 min)
-- [ ] Display tasks in a timeline view
-- [ ] "Start Now" rescheduler (Push Mode): reschedules all tasks to start from current time
-- [ ] Compress Mode: reschedules tasks to fit into remaining time until fixed day end
-- [ ] Mark tasks as fixed or skippable
-- [ ] Local storage only (no account required)
-
-
+- Display tasks in a timeline view
+- Edit, drag, and resize task blocks
+- Push Mode: reschedules all tasks to start from current time
+- Compress Mode: reschedules tasks to fit into remaining time until fixed day end
 - Overlay comparisons of old vs. new schedules
+
 ---
 
 ## 🗂️ Sample Task Schema
 
 ```json
 {
-  "title": "Write chemistry report",
-  "duration": 60,
-  "startTime": "09:00",   // optional
-  "priority": 2,           // 1 = low, 3 = high
-  "type": "focus",        // optional: focus, light, admin
-  "fixed": false,          // true if cannot move
-  "skippable": true        // false if must be kept during compression
+  "text": "Write chemistry report",
+  "duration": 60, // minutes
+  "startTime": "19:00",
+  "fixed": true,          // true if cannot move
+  "skippable": true,       // if too many tasks are not done, a task may be skipped upon reschedule
+  "completed": true, 
 }
 ```
 
@@ -62,10 +58,12 @@ SnapNShift is designed for **adaptive scheduling**: one-click rescheduling when 
 ---
 ⚙️ **Config Notes**
 - The current day end is configured as 12:00 AM (i.e., 24 * 60 minutes).
-- A default buffer of 5 minutes is enforced between tasks during rescheduling.
-These can be adjusted in `utils/rescheduleUtils.js`.
+- A default buffer of 15 minutes is enforced between tasks during rescheduling.
+These can be adjusted in `client/src/utils/rescheduleUtils.js`.
 
-**Note:** If there are incomplete tasks earlier in the day, using Compress Mode may shift later tasks d them unintentionally. To avoid this, Compress Mode is disabled temporarily at such times; use **Push Mode first** to realign all tasks starting from now, then optionally Compress.
+- The interval by which tasks can be dragged or resized is set to 15 minutes. This can be adjusted in `client/src/components/Timeline.jsx`.
+
+- The JWT token is stored in localStorage for simplicity; consider more secure storage (e.g. HttpOnly cookies) for sensitive applications.
 
 ---
 
@@ -73,28 +71,44 @@ These can be adjusted in `utils/rescheduleUtils.js`.
 
 - **Frontend**: React + Tailwind CSS
 - **Backend**: Express
-- **Persistence**: LocalStorage (guest) and file-based server persistence (user)
+- **Persistence**: LocalStorage (guest) and PostgreSQL with Prisma (user)
 
 ---
 
 ## 📦 Installation
 
-Clone the repository:
+### 1. Clone the repository
+
 ```bash
 git clone https://github.com/Henry-Li-R/SnapNShift.git
 cd SnapNShift
 ```
 
-Install dependencies:
+### 2. Set up the backend
+
 ```bash
+cd server
+touch .env   # Fill in DATABASE_URL, JWT_SECRET, JWT_EXPIRES_IN, FRONTEND_ORIGIN, and PORT
+npm install
+npx prisma generate
+npx prisma migrate dev  # optional: use `reset` if needed
+```
+
+### 3. Set up the frontend
+
+```bash
+cd ../client
 npm install
 ```
 
-Start the development server:
+### 4. Start both servers (concurrently)
+
+From the root directory:
+
 ```bash
+npm install
 npm run dev
 ```
-
 
 ---
 
@@ -121,7 +135,7 @@ npm run dev
 
 	1.	Fine-tune Push / Compress logic (respect constraints, fix inefficiencies)
  
-	2.	Add input validation (e.g., conflicting times, invalid durations, duplicate entries)
+	2.	Improve input validation (e.g., conflicting times, duplicate entries)
 
 
 ## 🔮 Potential Extensions

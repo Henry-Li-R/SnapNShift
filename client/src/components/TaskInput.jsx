@@ -6,14 +6,10 @@ export default function TaskInput({ onAdd }) {
   const DEFAULT_FIXED = false;
   const DEFAULT_SKIPPABLE = false;
 
-  /*
-  the task attributes below exhibit some dependencies
-  between each other
-  */
   const [text, setText] = useState("");
   const [duration, setDuration] = useState(DEFAULT_DURATION);
   const [startTime, setStartTime] = useState(DEFAULT_START_TIME);
-  // starTime must take on non-null string time value
+  // startTime must take on non-null string time value
   const [fixed, setFixed] = useState(DEFAULT_FIXED);
   const [skippable, setSkippable] = useState(DEFAULT_SKIPPABLE);
   // skippable may be replaced with priority,
@@ -31,7 +27,16 @@ export default function TaskInput({ onAdd }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!text.trim()) return;
+    if (!text.trim()) {
+      alert("Task text must not be empty.");
+      return;
+    }
+    const parsedDuration = parseInt(duration, 10);
+    if (isNaN(parsedDuration)) {
+      alert("Duration must be a positive integer.");
+      return;
+    }
+
     onAdd({
       text: text.trim(),
       duration: parseInt(duration, 10),
@@ -39,7 +44,6 @@ export default function TaskInput({ onAdd }) {
       fixed,
       skippable,
       completed,
-      skipped: false
     });
     setDefault();
   };
@@ -65,7 +69,7 @@ export default function TaskInput({ onAdd }) {
           <span className="text-sm text-gray-500">min</span>
         </div>
         <input
-          className="border rounded px-3 py-2 w-50"
+          className="border rounded px-3 py-2 w-1/2"
           type="time"
           value={startTime}
           onChange={(e) => setStartTime(e.target.value)}

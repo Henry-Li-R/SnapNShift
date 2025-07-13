@@ -2,7 +2,6 @@ const express = require('express');
 require('dotenv').config();
 const cors = require("cors");
 const authRoutes = require('./routes/auth');
-const authenticateToken = require('./middleware/auth');
 const userRoutes = require('./routes/user');
 
 const app = express();
@@ -14,14 +13,10 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-//app.options("*", cors(corsOptions));
-
 app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
-app.get('/public', (req, res) => {
-    res.send('Anyone can access this.');
-});
+
 
 // Protected route example usage
 /*
