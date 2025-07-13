@@ -27,7 +27,16 @@ export default function TaskInput({ onAdd }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!text.trim()) return;
+    if (!text.trim()) {
+      alert("Task text must not be empty.");
+      return;
+    }
+    const parsedDuration = parseInt(duration, 10);
+    if (isNaN(parsedDuration)) {
+      alert("Duration must be a positive integer.");
+      return;
+    }
+
     onAdd({
       text: text.trim(),
       duration: parseInt(duration, 10),
@@ -35,7 +44,6 @@ export default function TaskInput({ onAdd }) {
       fixed,
       skippable,
       completed,
-      skipped: false
     });
     setDefault();
   };
@@ -61,7 +69,7 @@ export default function TaskInput({ onAdd }) {
           <span className="text-sm text-gray-500">min</span>
         </div>
         <input
-          className="border rounded px-3 py-2 w-50"
+          className="border rounded px-3 py-2 w-1/2"
           type="time"
           value={startTime}
           onChange={(e) => setStartTime(e.target.value)}

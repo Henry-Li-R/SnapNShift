@@ -2,7 +2,7 @@ const express = require("express");
 const path = require("path");
 const jwt = require("jsonwebtoken");
 const authenticateToken = require("../middleware/auth");
-const prisma = require('../prisma');
+const prisma = require("../prisma");
 
 const router = express.Router();
 
@@ -27,7 +27,7 @@ router.get("/tasks", authenticateToken, async (req, res) => {
   try {
     const tasks = await prisma.task.findMany({
       where: { userId: req.user.id },
-      orderBy: { startTime: 'asc' },
+      orderBy: { startTime: "asc" },
     });
     res.json(tasks);
   } catch (err) {

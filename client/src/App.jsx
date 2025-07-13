@@ -4,7 +4,7 @@ import TaskPanel from "./components/TaskPanel";
 import AuthPrompt from "./components/AuthPrompt";
 import Timeline from "./components/Timeline";
 import { fetchWithAuth } from "./utils/fetchWithAuth";
-import { v4 as uuid } from 'uuid';
+import { v4 as uuid } from "uuid";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -27,7 +27,7 @@ export default function App() {
 
   // Apply the rescheduled task list
   const handleRescheduleConfirm = () => {
-    rescheduledTasks.forEach(task => delete task.skipped);
+    rescheduledTasks.forEach((task) => delete task.skipped);
     setTasks(rescheduledTasks);
     setRescheduledTasks([]);
     setSkippedTasks([]);
@@ -47,7 +47,7 @@ export default function App() {
       .then((res) => {
         if (res.ok) {
           setAuthMode("user");
-        } 
+        }
       })
       .catch(() => {
         console.log("No valid session, prompting login.");
@@ -148,7 +148,7 @@ export default function App() {
 
   // Show authentication prompt if auth attempt is underway
   if (authMode === "authAttempt") {
-    return <AuthPrompt onAuthSuccess={() => setAuthMode("user")} />
+    return <AuthPrompt onAuthSuccess={() => setAuthMode("user")} />;
   }
 
   // Main app UI: TaskPanel and Timeline side by side

@@ -34,7 +34,6 @@ export default function Timeline({
   const wasDraggingOrResizingRef = useRef(false); // Track if user was recently dragging or resizing (to suppress click)
   const [currentTime, setCurrentTime] = useState(new Date());
   const containerRef = useRef(null);
-  
 
   const handleAttributeChange = (id, key, value) => {
     setEditedAttributes((prev) => ({
@@ -67,9 +66,8 @@ export default function Timeline({
     const rawOffset = cursorY - containerTop + containerRef.current.scrollTop;
     const startMinutes = timeStrToMinutes(task.startTime);
     let newDuration = rawOffset - startMinutes;
-    
-    newDuration =
-      Math.round(newDuration / INTERVAL_MINUTES) * INTERVAL_MINUTES;
+
+    newDuration = Math.round(newDuration / INTERVAL_MINUTES) * INTERVAL_MINUTES;
     newDuration = Math.max(INTERVAL_MINUTES, newDuration);
     newDuration = Math.min(1440 - startMinutes, newDuration);
     setResizingTaskState({ id: task.id, newDuration });
@@ -85,7 +83,10 @@ export default function Timeline({
     const handleMouseUp = () => {
       if (resizingTaskState) {
         const currentTask = tasks.find((t) => t.id === resizingTaskState.id);
-        if (currentTask && currentTask.duration !== resizingTaskState.newDuration) {
+        if (
+          currentTask &&
+          currentTask.duration !== resizingTaskState.newDuration
+        ) {
           setTasks((prev) =>
             prev.map((t) =>
               t.id === resizingTaskState.id
@@ -109,7 +110,7 @@ export default function Timeline({
       // Re-enable text selection after resize
       document.body.style.userSelect = "auto";
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resizingTaskState]);
   // Mouse down handler
   const handleResizeMouseDown = (taskId) => {
@@ -128,7 +129,6 @@ export default function Timeline({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
-
 
   /* Task dragging (i.e. change startTime) */
   // Throttled mouse move handler to update task position during drag
@@ -183,7 +183,10 @@ export default function Timeline({
     const handleMouseUp = () => {
       if (draggedTaskState) {
         const currentTask = tasks.find((t) => t.id === draggedTaskState.id);
-        if (currentTask && currentTask.startTime !== draggedTaskState.newStartTime) {
+        if (
+          currentTask &&
+          currentTask.startTime !== draggedTaskState.newStartTime
+        ) {
           setTasks((prev) =>
             prev.map((t) =>
               t.id === draggedTaskState.id
@@ -315,7 +318,8 @@ export default function Timeline({
                     <div
                       className="absolute bottom-0 left-1/2 transform -translate-x-1/2 h-2 w-6 cursor-ns-resize"
                       style={{
-                        backgroundImage: "linear-gradient(to bottom, #4B5563 50%, transparent 50%)",
+                        backgroundImage:
+                          "linear-gradient(to bottom, #4B5563 50%, transparent 50%)",
                         backgroundSize: "100% 2px",
                         backgroundRepeat: "repeat-y",
                         opacity: 0.6,
@@ -369,6 +373,7 @@ export default function Timeline({
                           setTasks((prev) =>
                             prev.filter((t) => t.id !== task.id)
                           );
+                          setExpandedTaskId(null);
                         }}
                         className="text-xs text-red-500 hover:underline"
                       >

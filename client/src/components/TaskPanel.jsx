@@ -1,5 +1,9 @@
 import TaskInput from "./TaskInput";
-import { applyPushMode, applyCompressMode, timeStrToMinutes } from "../utils/reschedule";
+import {
+  applyPushMode,
+  applyCompressMode,
+  timeStrToMinutes,
+} from "../utils/reschedule";
 
 export default function TaskPanel({
   tasks,
@@ -8,11 +12,12 @@ export default function TaskPanel({
   onPreviewReschedule,
   onRescheduleConfirm,
   onRescheduleCancel,
-  showOverlay
+  showOverlay,
 }) {
   // Check if any task starts in the past (with optional buffer), disallowing compression
-  const hasPastIncompleteTasks = tasks.some(task => {
-    if (task.completed || !task.startTime || task.duration == null) return false;
+  const hasPastIncompleteTasks = tasks.some((task) => {
+    if (task.completed || !task.startTime || task.duration == null)
+      return false;
     const startTimeMinutes = timeStrToMinutes(task.startTime);
     const now = new Date();
     const nowMinutes = now.getHours() * 60 + now.getMinutes();
@@ -79,26 +84,34 @@ export default function TaskPanel({
       <div className="mt-4 space-y-2 border-t pt-4">
         <h3 className="text-sm font-semibold text-gray-600">Reschedule</h3>
         {/* Apply push mode and show a preview of rescheduled tasks */}
-        <button
-          onClick={() => {
-            const now = new Date();
-            const currentTimeStr = `${now
-              .getHours()
-              .toString()
-              .padStart(2, "0")}:${now
-              .getMinutes()
-              .toString()
-              .padStart(2, "0")}`;
-            const [updated, skippedTasks] = applyPushMode(tasks, currentTimeStr);
-            onPreviewReschedule(updated, skippedTasks);
-          }}
-          className="mt-4 mb-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-        >
-          Push Now
-        </button>
+        <span title={tasks.length === 0 ? "No tasks to reschedule." : ""}>
+          <button
+            onClick={() => {
+              const now = new Date();
+              const currentTimeStr = `${now
+                .getHours()
+                .toString()
+                .padStart(2, "0")}:${now
+                .getMinutes()
+                .toString()
+                .padStart(2, "0")}`;
+              const [updated, skippedTasks] = applyPushMode(
+                tasks,
+                currentTimeStr
+              );
+              onPreviewReschedule(updated, skippedTasks);
+            }}
+            className="mt-4 mb-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-green-300"
+            disabled={tasks.length === 0}
+          >
+            Push Now
+          </button>
+        </span>
         <span
           title={
-            hasPastIncompleteTasks
+            tasks.length === 0
+              ? "No tasks to reschedule."
+              : hasPastIncompleteTasks
               ? "Cannot compress: a past task is incomplete."
               : ""
           }
@@ -118,7 +131,7 @@ export default function TaskPanel({
               onPreviewReschedule(updated, []);
             }}
             className="mt-2 mb-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-blue-300"
-            disabled={hasPastIncompleteTasks}
+            disabled={tasks.length === 0 || hasPastIncompleteTasks}
           >
             Compress Now
           </button>
