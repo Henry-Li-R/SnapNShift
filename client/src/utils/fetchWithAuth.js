@@ -3,7 +3,7 @@ export function fetchWithAuth({ url, alertUser = true, options = {} }) {
 
   const headers = {
     ...(options.headers || {}),
-    ...(token && {Authorization: `Bearer ${token}`}),
+    ...(token && { Authorization: `Bearer ${token}` }),
     "Content-Type": "application/json",
   };
 

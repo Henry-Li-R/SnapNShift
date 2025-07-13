@@ -79,7 +79,8 @@ function findNextAvailableSlot(task, pointer, fixedTasks, scheduledTasks) {
     const conflict = fixedTasks.concat(scheduledTasks).some((otherTask) => {
       const otherStart = timeStrToMinutes(otherTask.startTime);
       const otherEnd = otherStart + otherTask.duration + BUFFER_BETWEEN_TASKS;
-      const candidateEnd = candidateStart + task.duration + BUFFER_BETWEEN_TASKS;
+      const candidateEnd =
+        candidateStart + task.duration + BUFFER_BETWEEN_TASKS;
       return candidateStart < otherEnd && otherStart < candidateEnd;
     });
     if (!conflict) {
@@ -154,7 +155,8 @@ function findEarliestAvailableSlot(task, pointer, fixedTasks, scheduledTasks) {
     const conflict = allTasks.some((other) => {
       const otherStart = timeStrToMinutes(other.startTime);
       const otherEnd = otherStart + other.duration + BUFFER_BETWEEN_TASKS;
-      const candidateEnd = candidateStart + task.duration + BUFFER_BETWEEN_TASKS;
+      const candidateEnd =
+        candidateStart + task.duration + BUFFER_BETWEEN_TASKS;
       return candidateStart < otherEnd && otherStart < candidateEnd;
     });
 

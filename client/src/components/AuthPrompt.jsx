@@ -6,6 +6,7 @@ export default function AuthPrompt({ onAuthSuccess }) {
   const [showRegister, setShowRegister] = useState(false);
   const [emailInput, setEmailInput] = useState("");
   const [passwordInput, setPasswordInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   return (
     <div className="p-8 space-y-4">
@@ -26,29 +27,39 @@ export default function AuthPrompt({ onAuthSuccess }) {
           onChange={(e) => setPasswordInput(e.target.value)}
         />
         <button
-          className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          onClick={() => {
+          disabled={isLoading}
+          className={`w-full px-4 py-2 rounded text-white ${
+            isLoading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
+          }`}
+          onClick={async () => {
+            if (isLoading) return;
+            setIsLoading(true);
             const endpoint = showRegister ? "/auth/register" : "/auth/login";
-            fetch(`${BASE_URL}${endpoint}`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                email: emailInput,
-                password: passwordInput,
-              }),
-            })
-              .then((res) => res.json())
-              .then((data) => {
-                if (data.token) {
-                  localStorage.setItem("snapnshift-token", data.token);
-                  onAuthSuccess();
-                } else {
-                  alert(data.message || "Authentication failed");
-                }
-              })
-              .catch(console.error);
+            try {
+              const res = await fetch(`${BASE_URL}${endpoint}`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  email: emailInput,
+                  password: passwordInput,
+                }),
+              });
+              const data = await res.json();
+              if (data.token) {
+                localStorage.setItem("snapnshift-token", data.token); // TODO: security risk storing jwt token
+                onAuthSuccess();
+              } else {
+                // login/register data validation is handled by backend
+                alert(data.message || "Authentication failed");
+              }
+            } catch (err) {
+              console.error(err);
+              alert("Network error. Please try again.");
+            } finally {
+              setIsLoading(false);
+            }
           }}
         >
           {showRegister ? "Register" : "Login"}
