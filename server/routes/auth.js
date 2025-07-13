@@ -2,7 +2,6 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const { addUser, getUser } = require("../utils/userStore");
 const authenticateToken = require("../middleware/auth");
 const prisma = require("../prisma");
 require("dotenv").config();
