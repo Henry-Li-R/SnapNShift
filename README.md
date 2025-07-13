@@ -37,13 +37,14 @@ SnapNShift is designed for **adaptive scheduling**: one-click rescheduling when 
 
 ```json
 {
-  "title": "Write chemistry report",
+  "text": "Write chemistry report",
   "duration": 60,
-  "startTime": "09:00",   // optional
-  "priority": 2,           // 1 = low, 3 = high
-  "type": "focus",        // optional: focus, light, admin
-  "fixed": false,          // true if cannot move
-  "skippable": true        // false if must be kept during compression
+  "startTime": "19:00",
+  "fixed": true,          // true if cannot move
+  "skippable": true,       // if too many tasks are not done, a task may be skipped upon reschedule
+  "completed": true,
+  "type": "focus",         // (unimplemented) e.g. focus, light, admin
+  
 }
 ```
 
@@ -62,8 +63,10 @@ SnapNShift is designed for **adaptive scheduling**: one-click rescheduling when 
 ---
 ⚙️ **Config Notes**
 - The current day end is configured as 12:00 AM (i.e., 24 * 60 minutes).
-- A default buffer of 5 minutes is enforced between tasks during rescheduling.
-These can be adjusted in `utils/rescheduleUtils.js`.
+- A default buffer of 15 minutes is enforced between tasks during rescheduling.
+These can be adjusted in `client/src/utils/rescheduleUtils.js`.
+
+- The interval by which tasks can be dragged or resized is set to 15 minutes. This can be adjusted in `client/src/components/Timeline.jsx`.
 
 **Note:** If there are incomplete tasks earlier in the day, using Compress Mode may shift later tasks d them unintentionally. To avoid this, Compress Mode is disabled temporarily at such times; use **Push Mode first** to realign all tasks starting from now, then optionally Compress.
 

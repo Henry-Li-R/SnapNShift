@@ -115,7 +115,6 @@ export default function TaskPanel({
                 .toString()
                 .padStart(2, "0")}`;
               const updated = applyCompressMode(tasks, currentTimeStr);
-              alert(`Compress Mode applied.`);
               onPreviewReschedule(updated, []);
             }}
             className="mt-2 mb-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-blue-300"

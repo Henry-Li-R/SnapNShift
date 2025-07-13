@@ -1,6 +1,6 @@
 const DAY_END = 24 * 60; // end of day: 12 AM
 
-const BUFFER_BETWEEN_TASKS = 5; // in minutes
+const BUFFER_BETWEEN_TASKS = 15; // in minutes
 
 /* Helpers: Conversion between time formats */
 export function timeStrToMinutes(timeStr) {

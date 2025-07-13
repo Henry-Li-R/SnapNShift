@@ -9,7 +9,7 @@ export default function TaskInput({ onAdd }) {
   const [text, setText] = useState("");
   const [duration, setDuration] = useState(DEFAULT_DURATION);
   const [startTime, setStartTime] = useState(DEFAULT_START_TIME);
-  // starTime must take on non-null string time value
+  // startTime must take on non-null string time value
   const [fixed, setFixed] = useState(DEFAULT_FIXED);
   const [skippable, setSkippable] = useState(DEFAULT_SKIPPABLE);
   // skippable may be replaced with priority,

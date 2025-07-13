@@ -29,7 +29,6 @@ export default function AuthPrompt({ onAuthSuccess }) {
           className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           onClick={() => {
             const endpoint = showRegister ? "/auth/register" : "/auth/login";
-            console.log(`${BASE_URL}${endpoint}`);
             fetch(`${BASE_URL}${endpoint}`, {
               method: "POST",
               headers: {
