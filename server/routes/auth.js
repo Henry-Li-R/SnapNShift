@@ -18,7 +18,7 @@ router.post("/register", async (req, res) => {
   const password = req.body.password;
 
   if (!email || !password) {
-    return res.status(400).json({ message: "Username and password required" });
+    return res.status(400).json({ message: "Email and password required" });
   }
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -57,7 +57,7 @@ router.post("/login", async (req, res) => {
   const password = req.body.password;
 
   if (!email || !password) {
-    return res.status(400).json({ message: "Username and password required" });
+    return res.status(400).json({ message: "Email and password required" });
   }
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -66,7 +66,8 @@ router.post("/login", async (req, res) => {
 
   const storedUser = await prisma.user.findUnique({ where: { email } });
   if (!storedUser) {
-    return res.status(404).json({ message: "User not found" });
+    // de facto message: user not found
+    return res.status(404).json({ message: "Invalid credentials" });
   }
 
   const match = await bcrypt.compare(password, storedUser.password);

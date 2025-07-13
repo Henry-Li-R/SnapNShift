@@ -31,6 +31,7 @@ router.get("/tasks", authenticateToken, async (req, res) => {
     });
     res.json(tasks);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Failed to fetch tasks" });
   }
 });
@@ -58,6 +59,7 @@ router.post("/tasks", authenticateToken, async (req, res) => {
 
     res.json({ message: "Tasks saved successfully", tasks: newTasks });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Failed to save tasks" });
   }
 });
